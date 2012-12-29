@@ -1,0 +1,91 @@
+
+@import "bootstrap";
+@import "bootstrap-responsive";
+
+.sep(@color: #e0e0e0, @weight: 1px, @type: solid, ) {
+  &:not(:last-child) {
+    border-bottom: @weight @type @color;
+  }
+}
+
+.clickable(@bgColor: #eeeeee) {
+  &:hover {
+    background-color: @bgColor;
+    cursor: pointer;
+  }
+}
+
+#search {
+  padding: 0 2em 0 1em;
+  display: block;
+
+  #searchterm {
+    box-sizing: border-box;
+    display: block;
+    width:100%;
+  }
+}
+
+#searchresults {
+  overflow: hidden;
+
+  .result {
+    padding: 1em 0;
+    .sep;
+    .clickable;
+    .clearfix;
+
+    .name, .details {
+      display: block;
+      .text-overflow;
+    }
+
+    .details, .details a {
+      color: #666666;
+    }
+
+    &.artist {
+      .albumCount:after {
+        content: " albums";
+      }
+    }
+
+    &.track {
+      .trackalbum:before {
+        content: " - ";
+      }
+    }
+
+    .icon {
+      width: 40px;
+      float: left;
+      margin-right: 1em;
+    }
+
+  }
+}
+
+#content {
+  .album {
+    .summary {
+      img {
+        margin: 10px;
+        float: left;
+      }
+      .details {
+        float: left;
+      }
+      margin-bottom: 2em;
+      .clearfix;
+    }
+    .tracks {
+      tr {
+        .clickable(#efefef);
+        .sep(#f0f0f0);
+      }
+      td {
+        padding: 1em;
+      }
+    }
+  }
+}

@@ -1,7 +1,47 @@
-@(message: String)
+@(room: String, rooms: Iterable[String])(implicit request: RequestHeader)
 
-@main("Welcome to Play 2.0") {
-    
-    @play20.welcome(message)
-    
+@main("mixtape", room, rooms) {
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span3">
+      <div class="well sidebar-nav">
+        <div id="search">
+          <input id="searchterm" type="text" />
+        </div>
+        <ul id="searchresults" class="nav nav-list">
+        </ul>
+      </div><!--/.well -->
+    </div><!--/span-->
+    <div class="span6" id="content">
+    </div>
+
+    <div class="span3">
+      <div id="queue" class="well">
+      </div>
+    </div>
+  </div><!--/row-->
+  <hr>
+  <footer>
+    <p>&copy; Company 2012</p>
+  </footer>
+</div><!--/.fluid-container-->
+<script type="text/javascript">
+  var ROOM = "@room";
+</script>
+
+@helper.javascriptRouter("jsRoutes")(
+  routes.javascript.Application.controls,
+  routes.javascript.Rdio.artist,
+  routes.javascript.Rdio.album,
+  routes.javascript.Rdio.search
+)
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/search.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/queue.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/artist.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/album.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/track.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
 }
