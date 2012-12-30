@@ -18,7 +18,10 @@ GET     /search                     controllers.Rdio.search(term)
 GET     /artist/:id                 controllers.Rdio.artist(id)
 GET     /album/:id                  controllers.Rdio.album(id)
 
-GET     /:room                      controllers.Application.index(room)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /debug                      controllers.Application.debug
+
+#this line has to go last
+GET     /:room                      controllers.Application.index(room)

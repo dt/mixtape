@@ -51,5 +51,9 @@ object Application extends Controller with Secured {
 
     (iteratee, room.enum)
   }
+
+  def debug = Action { implicit request =>
+    Ok(request.host)
+  }
 }
 
