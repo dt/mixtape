@@ -23,14 +23,15 @@ object ModelJson {
   implicit val TrackAddedWrites = itemEvent("added")(Json.writes[ItemAdded])
   implicit val ItemUpdatedWrites = itemEvent("updated")(Json.writes[ItemUpdated])
   implicit val ItemMovedWrites = itemEvent("moved")(Json.writes[ItemMoved])
+  implicit val ItemSkippedWrites = itemEvent("skipped")(Json.writes[ItemSkipped])
 
   implicit val PlaybackStartedWrites = itemEvent("started")(Json.writes[PlaybackStarted])
   implicit val PlaybackPausedWrites = itemEvent("paused")(Json.writes[PlaybackPaused])
   implicit val PlaybackFinishedWrites = itemEvent("finished")(Json.writes[PlaybackFinished])
-  implicit val PlaybackSkippedWrites = itemEvent("skipped")(Json.writes[PlaybackSkipped])
 
   implicit val RoomWrites = new Writes[Room] {
     override def writes(o: Room) = Json.obj(
+      "playing" -> o.playing.map(x => Json.toJson(x)),
       "queue" -> JsArray(o.queue.values.toSeq.map(i => Json.toJson(i)))
     )
   }

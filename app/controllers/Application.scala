@@ -40,8 +40,8 @@ object Application extends Controller with Secured {
             (o \ "id").asOpt[String].foreach(room.voteDown(_, u))
           case Some("move") => for {
             id <- (o \ "id").asOpt[String]
-            putBefore <- (o \ "putBefore").asOpt[String]
-          } room.move(id, Some(putBefore).filter(_ == ""), u)
+            putBefore = (o \ "putBefore").asOpt[String].filterNot(_ == "")
+          } room.move(id, putBefore, u)
           case Some("finished") => room.playNext()
           case Some(unknown) => Logger.error("unknown event: " + unknown)
           case None => Logger.error("missing event! " + o.toString)

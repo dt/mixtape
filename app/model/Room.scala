@@ -18,7 +18,7 @@ class Room(val name: String) {
   val (enum, channel) = Concurrent.broadcast[JsValue]
 
   def add(track: Track, by: User) = {
-    val e = QueueItem(track , by)
+    val e = QueueItem(track.id, track , by)
     queue.push(track.id -> e)
     channel.push(Json.toJson(ItemAdded(e)))
   }
@@ -46,8 +46,18 @@ class Room(val name: String) {
     }
   }
 
-  def playNext() = {
-    playing = queue.pop()
-    playing.foreach(x => channel.push(Json.toJson(PlaybackStarted(x.track.id))))
+  def shouldSkip(item: QueueItem): Boolean = item.votes.down.size > item.votes.up.size
+
+  def playNext() {
+    queue.pop() match {
+      case None => playing = None
+      case Some(next) if shouldSkip(next) => {
+        channel.push(Json.toJson(ItemSkipped(next.id)))
+        playNext()
+      }
+      case Some(next) =>
+        playing = Some(next)
+        channel.push(Json.toJson(PlaybackStarted(next.id)))
+    }
   }
 }

@@ -8,9 +8,14 @@
   }
 }
 
-.clickable(@bgColor: #eeeeee) {
+.rollover(@bgColor: #eeeeee) {
   &:hover {
     background-color: @bgColor;
+  }
+}
+
+.clickable {
+  &:hover {
     cursor: pointer;
   }
 }
@@ -26,42 +31,47 @@
   }
 }
 
+.trackitem {
+  padding: 1em 0;
+  .sep;
+  .clearfix;
+  .rollover;
+  border-radius: 6px;
+
+  .name, .details {
+    display: block;
+    .text-overflow;
+  }
+
+  .details, .details a {
+    color: #666666;
+  }
+
+  .albumCount:after {
+    content: " albums";
+  }
+
+  .trackalbum:before {
+    content: " - ";
+  }
+
+  .trackartist{
+    .clickable;
+  }
+
+  .icon {
+    width: 40px;
+    float: left;
+    margin-right: 1em;
+  }
+}
+
 #searchresults {
   overflow: hidden;
 
   .result {
-    padding: 1em 0;
-    .sep;
+    .trackitem;
     .clickable;
-    .clearfix;
-
-    .name, .details {
-      display: block;
-      .text-overflow;
-    }
-
-    .details, .details a {
-      color: #666666;
-    }
-
-    &.artist {
-      .albumCount:after {
-        content: " albums";
-      }
-    }
-
-    &.track {
-      .trackalbum:before {
-        content: " - ";
-      }
-    }
-
-    .icon {
-      width: 40px;
-      float: left;
-      margin-right: 1em;
-    }
-
   }
 }
 
@@ -80,12 +90,31 @@
     }
     .tracks {
       tr {
-        .clickable(#efefef);
+        .rollover(#efefef);
+        .clickable;
         .sep(#f0f0f0);
       }
       td {
         padding: 1em;
       }
+      .trackartist {
+        color: #777;
+      }
+    }
+  }
+}
+
+#queue {
+  .enqueued {
+    .trackitem;
+    .trackalbum {
+      display: none;
+    }
+    .icon {
+      .clickable;
+    }
+    .icon:hover {
+      outline: 1px dotted #ddd;
     }
   }
 }

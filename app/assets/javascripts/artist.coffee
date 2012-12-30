@@ -1,2 +1,0 @@
-class window.Artist
-  show: =>

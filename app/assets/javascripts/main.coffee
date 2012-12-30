@@ -1,5 +1,35 @@
 class Main
-  constructor: (@sock, @$content) ->
+  @sock
+  constructor: (@room, @$content) ->
+    @queue = new Queue(this)
+    this.reconnect()
+
+  openSocket: =>
+    console.log("opening socket")
+    sock = new WebSocket(jsRoutes.controllers.Application.controls(@room).webSocketURL())
+    sock.onmessage = this.handleMsg
+    sock.onclose = () =>
+      console.error "Socket Closed!"
+      window.setTimeout (() => this.reconnect()), 15000
+    sock
+
+  reconnect: =>
+    @sock = this.openSocket()
+    @queue.reload()
+
+  handleMsg: (msg) =>
+    o = JSON.parse msg.data
+    switch o.event
+      when "added" then  @queue.itemAdded(o.item)
+      when "updated" then @queue.itemUpdated(o.item)
+      when "skipped"  then @queue.itemSkipped(o.id)
+      when "moved"  then @queue.itemMoved(o.id, o.nowBefore)
+      else
+        @queue.reload()
+    console.log o
+
+  send: (msg) =>
+    @sock.send JSON.stringify msg
 
   showArtist: (r) =>
     jsRoutes.controllers.Rdio.artist(r).ajax({success: (o) => new Artist(this, o).show()})
@@ -7,45 +37,15 @@ class Main
   showAlbum: (a) =>
     jsRoutes.controllers.Rdio.album(a).ajax({success: (o) => new Album(this, o).show()})
 
-  addTrack: (id, name, artist, album, albumKey, art) =>
-    @sock.sendMsg({
-      event: "add",
-      id: id,
-      name: name,
-      artist: artist,
-      album: album,
-      albumKey: albumKey,
-      art: art
-    })
-
-  moveItem: (id, putBefore) =>
-    @sock.sendMsg({event: "move", id: id, putBefore: putBefore})
-
-  voteUp: (id) =>
-    @sock.sendMsg({event: "voteup", id: id})
-
-  voteDown: (id) =>
-    @sock.sendMsg({event: "votedown", id: id})
-
   playbackStarted: (id) =>
-    @sock.sendMsg({event: "started", id: id})
+    this.send({event: "started", id: id})
 
   playbackFinished: (id) =>
-    @sock.sendMsg({event: "finished"})
+    this.send({event: "finished"})
 
 
 jQuery ->
-  console.log("Room:", ROOM);
-  socket = new WebSocket(jsRoutes.controllers.Application.controls(ROOM).webSocketURL())
-  socket.onmessage = (msg) ->
-    o = JSON.parse msg.data
-    console.log o
-  socket.onclose = () ->
-    console.error "Socket Closed!"
-  socket.sendMsg = (msg) ->
-    socket.send JSON.stringify msg
-
-  window.mixtape = new Main(socket, $("#content"))
+  window.mixtape = new Main(ROOM, $("#content"))
   new Search(window.mixtape, $("#searchterm"), $("#searchresults"))
 
   $(".sidebar-nav a").click (c) ->
