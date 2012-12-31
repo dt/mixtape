@@ -27,8 +27,4 @@ object Rdio extends Controller {
       "extras" -> Seq("tracks")
     )).map(i => Ok(i.json \ "result" \ id))
   }}
-
-  def token(domain: String) =
-    RdioApi.call("getPlaybackToken", Map("domain" -> Seq(domain)))
-      .map(i => (i.json \ "result").asOpt[String])
 }

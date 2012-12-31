@@ -1,6 +1,37 @@
+@import "bootstrap/_reset.less";
 
-@import "bootstrap";
-@import "bootstrap-responsive";
+// Core variables and mixins
+@import "bootstrap/_variables.less"; // Modify this for custom colors, font-sizes, etc
+@import "bootstrap/_mixins.less";
+
+// Grid system and page structure
+@import "bootstrap/_scaffolding.less";
+@import "bootstrap/_grid.less";
+@import "bootstrap/_layouts.less";
+
+// Base CSS
+@import "bootstrap/_type.less";
+@import "bootstrap/_forms.less";
+@import "bootstrap/_tables.less";
+
+// Components: common
+@import "bootstrap/_wells.less";
+@import "bootstrap/_component-animations.less";
+@import "bootstrap/_close.less";
+
+// Components: Nav
+@import "bootstrap/_navs.less";
+@import "bootstrap/_navbar.less";
+
+// Components: Popovers
+@import "bootstrap/_modals.less";
+@import "bootstrap/_tooltip.less";
+@import "bootstrap/_popovers.less";
+
+@import "bootstrap/_hero-unit.less";
+
+// Utility classes
+@import "bootstrap/_utilities.less"; // Has to be last to override when necessary
 
 .sep(@color: #e0e0e0, @weight: 1px, @type: solid, ) {
   &:not(:last-child) {

@@ -10,7 +10,7 @@ class window.Queue
     @$queue.disableSelection();
 
 
-  addTrack: (id, name, artist, album, albumKey, art) =>
+  addTrack: (id, name, artist, album, albumKey, art, duration) =>
     @main.send({
       event: "add",
       id: id,
@@ -18,7 +18,8 @@ class window.Queue
       artist: artist,
       album: album,
       albumKey: albumKey,
-      icon: art
+      icon: art,
+      duration: duration
     })
 
   moveItem: (id, putBefore) => @main.send({event: "move", id: id, putBefore: putBefore})
@@ -63,3 +64,34 @@ class window.Queue
     $r
 
 class window.Player
+  constructor: (@main, @$player, token) ->
+    @$rdio = @$player.find('.rdio')
+    @$rdio.bind 'ready.rdio', (_, userinfo) =>
+      console.log "rdio is ready", userinfo
+
+    @$rdio.bind 'playingTrackChanged.rdio', (e, playingTrack, sourcePosition) =>
+      if (@main.sendPlaybackEvents && playingTrack)
+        console.log "track change", playingTrack
+
+    @$rdio.bind 'positionChanged.rdio', (e, pos) =>
+      @main.reportPlaybackPosition(pos) if @main.sendPlaybackEvents
+
+    @$rdio.bind 'playStateChanged.rdio', (e, playState) =>
+      if @main.sendPlaybackEvents
+        switch playState
+          when 1 then @main.repotPlaybackPlaying
+          when 0 then @main.repotPlaybackPaused
+          when 4 then @main.repotPlaybackPaused
+          when 2 then @main.repotPlaybackFinished
+
+    console.log("starting rdio...")
+    @rdio = @$rdio.rdio(token)
+
+  start: (item) =>
+    console.log("now playing: ", item)
+    if (@main.localPlayback)
+      @rdio.play(item.track.id)
+
+  updatePosition: (pos) =>
+    @$player.find('.progress').css('width', Math.floor(100 * pos / @playing.duration)+'%')
+

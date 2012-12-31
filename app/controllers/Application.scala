@@ -1,14 +1,14 @@
 package controllers
 
-import lib.Gravatar
 import play.api._
 import play.api.mvc._
 import play.api.libs.iteratee._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import model._
 
+import lib.{Gravatar, RdioApi}
+import model._
 import model.ModelJson._
 
 object Application extends Controller with Secured {
@@ -17,7 +17,12 @@ object Application extends Controller with Secured {
 
   def index(roomId: String) = MaybeAuthenticated { implicit request =>
     val room = Room(roomId.toLowerCase)
-    Ok(views.html.index(room.name, Room.list))
+    val domain = request.domain
+    Async {
+      RdioApi.call("getPlaybackToken", Map("domain" -> Seq(domain))).map{ token =>
+        Ok(views.html.index(room.name, Room.list, (token.json \ "result").as[String]))
+      }
+    }
   }
 
   def queue(roomId: String) = Action {
@@ -33,7 +38,7 @@ object Application extends Controller with Secured {
         Logger.debug("websocket message: " + o.toString)
         (o \ "event").asOpt[String] match {
           case Some("add") =>
-            Json.fromJson[Track](o).foreach(room.add(_, u))
+            Json.fromJson[Track](o).foreach(room.enqueue(_, u))
           case Some("voteup") =>
             (o \ "id").asOpt[String].foreach(room.voteUp(_, u))
           case Some("votedown") =>
@@ -41,8 +46,9 @@ object Application extends Controller with Secured {
           case Some("move") => for {
             id <- (o \ "id").asOpt[String]
             putBefore = (o \ "putBefore").asOpt[String].filterNot(_ == "")
-          } room.move(id, putBefore, u)
+          } room.moveItem(id, putBefore, u)
           case Some("finished") => room.playNext()
+          case Some("progress") => room.updatePlaybackPosition((o \ "pos").as[Double])
           case Some(unknown) => Logger.error("unknown event: " + unknown)
           case None => Logger.error("missing event! " + o.toString)
         }

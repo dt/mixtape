@@ -5,7 +5,7 @@ import play.api.libs.json._
 import play.api.libs.json.Writes._
 
 object ModelJson {
-  def itemEvent[T <: ItemEvent](e: String)(fmt: OWrites[T]): Writes[T] = new Writes[T]{
+  def event[T <: Event](e: String)(fmt: OWrites[T]): Writes[T] = new Writes[T]{
     override def writes(o: T): JsObject = fmt.writes(o) + ("event" -> JsString(e))
   }
 
@@ -20,14 +20,15 @@ object ModelJson {
   implicit val VotesWrites = Json.writes[Votes]
   implicit val QueueItemWrites = Json.writes[QueueItem]
 
-  implicit val TrackAddedWrites = itemEvent("added")(Json.writes[ItemAdded])
-  implicit val ItemUpdatedWrites = itemEvent("updated")(Json.writes[ItemUpdated])
-  implicit val ItemMovedWrites = itemEvent("moved")(Json.writes[ItemMoved])
-  implicit val ItemSkippedWrites = itemEvent("skipped")(Json.writes[ItemSkipped])
+  implicit val TrackAddedWrites = event("added")(Json.writes[ItemAdded])
+  implicit val ItemUpdatedWrites = event("updated")(Json.writes[ItemUpdated])
+  implicit val ItemMovedWrites = event("moved")(Json.writes[ItemMoved])
+  implicit val ItemSkippedWrites = event("skipped")(Json.writes[ItemSkipped])
 
-  implicit val PlaybackStartedWrites = itemEvent("started")(Json.writes[PlaybackStarted])
-  implicit val PlaybackPausedWrites = itemEvent("paused")(Json.writes[PlaybackPaused])
-  implicit val PlaybackFinishedWrites = itemEvent("finished")(Json.writes[PlaybackFinished])
+  implicit val PlaybackStartedWrites = event("started")(Json.writes[PlaybackStarted])
+  implicit val PlaybackPausedWrites = event("paused")(Json.writes[PlaybackPaused])
+  implicit val PlaybackFinishedWrites = event("finished")(Json.writes[PlaybackFinished])
+  implicit val PlaybackProgressWrites = event("progress")(Json.writes[PlaybackProgress])
 
   implicit val RoomWrites = new Writes[Room] {
     override def writes(o: Room) = Json.obj(

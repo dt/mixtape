@@ -24,7 +24,7 @@ class window.Album
       row.append $('<td>').text(t.name)
       row.append $('<td>').text(t.artist).addClass("trackartist")
       row.append $('<td>').text(Track.format(t.duration))
-      row.click () => @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon)
+      row.click () => @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon, t.duration)
       row
 
   show: => @main.$content.empty().append $('<div>').addClass('album').append(@summary, @tracks)
@@ -44,7 +44,7 @@ class window.Track
 
   this.renderSearchResult = (res, click, artistClick, albumClick) =>
     $r = $("<li>").addClass("result").addClass("track").click () =>
-      click(res.key, res.name, res.artist, res.album, res.albumKey, res.icon)
+      click(res.key, res.name, res.artist, res.album, res.albumKey, res.icon, res.duration)
     $r.append $("<img>").addClass("icon").attr("src", res.icon)
     $r.append $("<span>").addClass("name").text(res.name)
     $from = $("<div>").addClass("details")
