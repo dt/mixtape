@@ -3,8 +3,10 @@
 Mixtape is a web-based collaborative jukebox supporting with multiple 'rooms' and multiple listening and non-listening participants.
 Mixtape is backed by Rdio, built on Playframework using webscokets.
 
+![Screenshot](http://f.cl.ly/items/1n0K0R2A0P3n1z0A1X2t/Screen%20Shot%202012-12-30%20at%204.28.58%20PM.png)
+
 ## Prereqisits
-* Play! 2.1 (currently in RC and has to be installed by hand [see below] -- 2.0.x has a little NPE)
+* Play! 2.1 (currently in RC and has to be installed by hand [see below] -- 2.0.x has [a little NPE](https://github.com/playframework/Play20/pull/394))
 
 ### Installing Play 2.1-RC1 by hand
     brew update
