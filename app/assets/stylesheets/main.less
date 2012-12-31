@@ -29,6 +29,7 @@
 @import "bootstrap/_popovers.less";
 
 @import "bootstrap/_hero-unit.less";
+@import "bootstrap/_progress-bars.less";
 
 // Utility classes
 @import "bootstrap/_utilities.less"; // Has to be last to override when necessary
@@ -43,6 +44,10 @@
   &:hover {
     background-color: @bgColor;
   }
+}
+
+.disabled {
+  opacity: 0.25;
 }
 
 .clickable {
@@ -148,4 +153,54 @@
       outline: 1px dotted #ddd;
     }
   }
+}
+
+#player {
+  #mode {
+    float: right;
+    opacity: 0.75;
+    .local-playback, .playback-master {
+      .clickable;
+      width: 20px;
+      height: 20px;
+      display: block;
+      padding: 5px;
+
+    }
+  }
+
+  #playing {
+    display: none;
+    .name, .details {
+      display: block;
+      .text-overflow;
+    }
+
+    .details, .details a {
+      color: #666666;
+    }
+
+    .trackartist {
+      .clickable;
+    }
+
+    .icon {
+      width: 70px;
+      float: left;
+      margin-right: 1em;
+    }
+  }
+  &.playing #playing {
+    display: block;
+  }
+  .rdio {
+    height: 1px;
+    width: 1px;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  border-bottom: 1px solid #e0e0e0;
+
 }

@@ -1,4 +1,4 @@
-@(title: String, room: String, rooms: Iterable[String])(content: Html)(implicit request: RequestHeader)
+@(title: String, room: String, rooms: Iterable[String])(content: Html)(implicit request: MaybeAuthenticatedRequest)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -37,17 +37,16 @@
           <a class="brand" href="#">Mixtape</a>
           <div class="nav-collapse collapse">
             <p class="navbar-text pull-right">
-              @(request match {
-                case authed: AuthenticatedRequest => {
-                  <span>Logged in as {authed.user.firstname} {authed.user.lastname.take(1)}
-                    <a href="http://gravatar.com" target="_blank">
-                      <img src={authed.user.avatar(25)} alt="change your photo on gravatar" />
-                    </a>
-                  </span>
-                }
-                case _ =>
-                  <a class="navbar-link" href={routes.Auth.start.toString}>Login</a>
-              })
+
+            @request.userOpt.map { u =>
+              <span>Logged in as @u.firstname @u.lastname.take(1)
+                <a href="http://gravatar.com" target="_blank">
+                  <img src="@u.avatar(25)" alt="change your photo on gravatar" />
+                </a>
+              </span>
+            }.getOrElse{
+              <a class="navbar-link" href="@routes.Auth.start">Login</a>
+            }
 
             </p>
             <ul class="nav">

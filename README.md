@@ -24,3 +24,6 @@ Mixtape is backed by Rdio, built on Playframework using webscokets.
 * Persistance is in-memory only for the moment, so restarting server clears all rooms/queues/etc
 * You have to be logged in (via OpenID) to enqueue items, reorder the queue, vote up/down, etc.
 * Items with net negitive balance of votes will be skipped when they reach the top of the queue
+
+## License
+Modified BSD (3-clause)

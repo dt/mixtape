@@ -6,7 +6,9 @@ import play.api.libs.openid._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import model.User
 
-case class AuthenticatedRequest(user: User, request: Request[AnyContent]) extends WrappedRequest(request)
+abstract class RequestWithUserOpt(userOpt: Option[User], request: Request[AnyContent]) extends WrappedRequest(request)
+case class AuthenticatedRequest(user: User, request: Request[AnyContent]) extends RequestWithUserOpt(Some(user), request)
+case class MaybeAuthenticatedRequest(userOpt: Option[User], request: Request[AnyContent]) extends RequestWithUserOpt(userOpt, request)
 
 trait Secured {
   def user(implicit r: RequestHeader): Option[User] = for {
@@ -19,8 +21,8 @@ trait Secured {
     user(r).map( u => f(AuthenticatedRequest(u, r))).getOrElse(Results.Redirect(routes.Auth.start))
   }
 
-  def MaybeAuthenticated(f: RequestHeader => Result) = Action { implicit r =>
-    user(r).map( u => f(AuthenticatedRequest(u, r))).getOrElse(f(r))
+  def MaybeAuthenticated(f: MaybeAuthenticatedRequest => Result) = Action { implicit r =>
+    f(MaybeAuthenticatedRequest(user(r), r))
   }
 
 }

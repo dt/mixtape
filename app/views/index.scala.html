@@ -1,4 +1,4 @@
-@(room: String, rooms: Iterable[String], playbackToken: String)(implicit request: RequestHeader)
+@(room: String, rooms: Iterable[String], playbackToken: String)(implicit request: MaybeAuthenticatedRequest)
 
 @main("mixtape", room, rooms) {
 <div class="container-fluid">
@@ -17,7 +17,24 @@
 
     <div class="span3 well">
       <div id="player">
+        <div id="mode">
+          <img class="local-playback" src="@routes.Assets.at("images/img/glyphicons_184_volume_up.png")" title="local playback" />
+          <img class="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
+        </div>
+        <div id="playing">
+          <img class="icon">
+          <span class="name"></span>
+          <div class="details">
+            <a class="trackartist"></a>
+          </div>
+          <div class="clearfix"></div>
+                <div class="progress">
+                  <div class="bar"></div>
+                </div>
+        </div>
+
         <div class="rdio"></div>
+        <div class="clearfix"></div>
       </div>
       <div id="queue">
       </div>
@@ -25,7 +42,14 @@
   </div><!--/row-->
   <hr>
   <footer>
-    <p>&copy; Company 2012</p>
+    <p>
+      <a href="http://github.com/tinystatemachine/mixtape" target="_blank">Mixtape</a> was built by
+      <a href="http://twitter.com/state_machine" target="_blank">David</a> using
+      <a href="http://developer.rdio.com" target="_blank">the Rdio API</a>,
+      <a href="http://playframework.org" target="_blank">Play! Framework</a>,
+      <a href="http://twitter.github.com/bootstrap" target="_blank">Bootstrap</a> (obviously), and
+      <a href="http://glyphicons.com" target="_blank">Glyphicons</a>.
+    </p>
   </footer>
 </div><!--/.fluid-container-->
 <script type="text/javascript">

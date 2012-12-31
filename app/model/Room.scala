@@ -14,6 +14,7 @@ object Room {
 
 class Room(val name: String) {
   var playing: Option[QueueItem] = None
+  var playbackPosition = 0.0
   val queue = new lib.HashQueue[String, QueueItem]
   val (enum, channel) = Concurrent.broadcast[JsValue]
 
@@ -21,6 +22,8 @@ class Room(val name: String) {
     val e = QueueItem(track.id, track , by)
     queue.push(track.id -> e)
     channel.push(Json.toJson(ItemAdded(e)))
+    if (queue.size == 1 && playing.isEmpty)
+    playNext()
   }
 
   def voteUp(id: String, who: User) = {
@@ -51,18 +54,23 @@ class Room(val name: String) {
 
   def playNext() {
     queue.pop() match {
-      case None => playing = None
+      case None => {
+        playing = None
+        channel.push(Json.toJson(PlaybackFinished))
+      }
       case Some(next) if shouldSkip(next) => {
         channel.push(Json.toJson(ItemSkipped(next.id)))
         playNext()
       }
       case Some(next) =>
         playing = Some(next)
+        playbackPosition = 0.0
         channel.push(Json.toJson(PlaybackStarted(next)))
     }
   }
 
   def updatePlaybackPosition(pos: Double) = {
+    playbackPosition = pos
     channel.push(Json.toJson(PlaybackProgress(pos)))
   }
 }

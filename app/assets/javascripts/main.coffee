@@ -6,6 +6,12 @@ class Main
     this.reconnect()
     new Search(this, $("#searchterm"), $("#searchresults"))
 
+  reloadState: =>
+    jsRoutes.controllers.Application.queue(@room).ajax({success: (o) =>
+      @queue.render(o.queue)
+      @player.setPlaying(o.playing)
+    })
+
 
   showArtist: (r) => jsRoutes.controllers.Rdio.artist(r).ajax({success: (o) => new Artist(this, o).show()})
   showAlbum: (a) => jsRoutes.controllers.Rdio.album(a).ajax({success: (o) => new Album(this, o).show()})
@@ -20,10 +26,11 @@ class Main
     sock
   reconnect: =>
     @sock = this.openSocket()
-    @queue.reload()
+    this.reloadState()
 
   handleMsg: (msg) =>
     o = JSON.parse msg.data
+    console.log(o) unless o.event == "progress"
     switch o.event
       when "added" then  @queue.itemAdded(o.item)
       when "updated" then @queue.itemUpdated(o.item)
@@ -31,24 +38,23 @@ class Main
       when "moved"  then @queue.itemMoved(o.id, o.nowBefore)
       when "started" then @player.start(o.item)
       when "progress" then @player.updatePosition(o.pos)
+      when "finished" then @player.setPlaying(false)
       else
-        @queue.reload()
-    console.log o
+        @this.reloadState()
+        console.warn "unknown event: " + o.event, o
 
   send: (msg) =>
+    console.log "sending: ", msg unless msg.event == "progress"
     @sock.send JSON.stringify msg
 
-  playbackStarted: (id) =>
-    this.send({event: "started", id: id})
-
-  playbackFinished: (id) =>
+  reportPlaybackFinished: =>
     this.send({event: "finished"})
 
-  playbackPosition: (pos) =>
+  reportPlaybackPosition: (pos) =>
     this.send({event: "progress", pos: pos})
 
   localPlayback: true
-  sendPlaybackEvents: true
+  sendPlaybackEvents: false
 
 
 
