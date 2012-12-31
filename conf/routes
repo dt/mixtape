@@ -6,8 +6,8 @@
 
 GET     /                           controllers.Application.index(room = "NY")
 
-GET     /:room/controls             controllers.Application.controls(room)
-GET     /:room/queue                controllers.Application.queue(room)
+GET     /$room<[a-zA-Z0-9]+>/controls             controllers.Application.controls(room: String)
+GET     /$room<[a-zA-Z0-9]+>/queue                controllers.Application.queue(room: String)
 
 # OpenID
 GET     /openid                     controllers.Auth.start
@@ -24,4 +24,4 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /debug                      controllers.Application.debug
 
 #this line has to go last
-GET     /:room                      controllers.Application.index(room)
+GET    /$room<[a-zA-Z0-9]+>         controllers.Application.index(room: String)
