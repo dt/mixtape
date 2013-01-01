@@ -18,8 +18,7 @@
     <div class="span3 well">
       <div id="player">
         <div id="mode">
-          <img class="local-playback" src="@routes.Assets.at("images/img/glyphicons_184_volume_up.png")" title="local playback" />
-          <img class="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
+          <img id="local-playback" src="@routes.Assets.at("images/img/glyphicons_184_volume_up.png")" title="local playback" />
         </div>
         <div id="playing">
           <img class="icon">
@@ -28,9 +27,10 @@
             <a class="trackartist"></a>
           </div>
           <div class="clearfix"></div>
-                <div class="progress">
-                  <div class="bar"></div>
-                </div>
+          <div class="progress">
+            <div class="bar"></div>
+          </div>
+          <div id="position"></div>
         </div>
 
         <div class="rdio"></div>
@@ -49,6 +49,12 @@
       <a href="http://playframework.org" target="_blank">Play! Framework</a>,
       <a href="http://twitter.github.com/bootstrap" target="_blank">Bootstrap</a> (obviously), and
       <a href="http://glyphicons.com" target="_blank">Glyphicons</a>.
+    </p>
+    <p class="debug">
+      <img id="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
+      ε <a id="playback-lag" class="clickable" title="resync"></a>
+      Δ <span id="total-correction"></a>
+
     </p>
   </footer>
 </div><!--/.fluid-container-->

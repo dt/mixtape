@@ -9,9 +9,10 @@ GET     /                           controllers.Application.index(room = "NY")
 GET     /$room<[a-zA-Z0-9]+>/controls             controllers.Application.controls(room: String)
 GET     /$room<[a-zA-Z0-9]+>/queue                controllers.Application.queue(room: String)
 
-# OpenID
-GET     /openid                     controllers.Auth.start
-GET     /login                      controllers.Auth.finish
+# Auth
+GET     /openid                     controllers.Auth.start(returnTo: String ?= "/")
+GET     /login                      controllers.Auth.finish(returnTo: String ?= "/")
+GET     /logout                     controllers.Auth.logout()
 
 # Rdio API proxy
 GET     /search                     controllers.Rdio.search(term)

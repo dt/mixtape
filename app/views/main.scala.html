@@ -39,13 +39,16 @@
             <p class="navbar-text pull-right">
 
             @request.userOpt.map { u =>
-              <span>Logged in as @u.firstname @u.lastname.take(1)
+              <span>
+                <a class="navbar-link" href="@routes.Auth.logout()">Logged in</a> as
+                <span title="@u.email">@u.firstname @u.lastname.take(1)</span>
+
                 <a href="http://gravatar.com" target="_blank">
                   <img src="@u.avatar(25)" alt="change your photo on gravatar" />
                 </a>
               </span>
             }.getOrElse{
-              <a class="navbar-link" href="@routes.Auth.start">Login</a>
+              <a class="navbar-link" href="@routes.Auth.start(request.uri)">Login</a>
             }
 
             </p>

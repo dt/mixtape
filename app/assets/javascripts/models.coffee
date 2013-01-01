@@ -23,7 +23,7 @@ class window.Album
       row.append $('<td>').text(t.trackNum)
       row.append $('<td>').text(t.name)
       row.append $('<td>').text(t.artist).addClass("trackartist")
-      row.append $('<td>').text(Track.format(t.duration))
+      row.append $('<td>').text(Track.formatDuration(t.duration))
       row.click () => @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon, t.duration)
       row
 
@@ -40,7 +40,7 @@ class window.Album
     $r
 
 class window.Track
-  this.format = (d) -> Math.floor(d / 60) + ":" + ("0"+(d % 60)).slice(-2)
+  this.formatDuration = (d) -> Math.floor(d / 60) + ":" + ("0"+(d % 60)).slice(-2)
 
   this.renderSearchResult = (res, click, artistClick, albumClick) =>
     $r = $("<li>").addClass("result").addClass("track").click () =>

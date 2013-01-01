@@ -47,7 +47,7 @@
 }
 
 .disabled {
-  opacity: 0.25;
+  opacity: 0.25 !important;
 }
 
 .clickable {
@@ -155,18 +155,27 @@
   }
 }
 
+
+#local-playback {
+  width: 20px;
+  height: 20px;
+  padding: 5px;
+}
+
+#playback-master {
+  height: 1em;
+  width: 1em;
+  padding: 5px;
+  margin-top: -0.25em;
+}
+
+footer * {
+  opacity: 0.75;
+}
+
 #player {
   #mode {
     float: right;
-    opacity: 0.75;
-    .local-playback, .playback-master {
-      .clickable;
-      width: 20px;
-      height: 20px;
-      display: block;
-      padding: 5px;
-
-    }
   }
 
   #playing {

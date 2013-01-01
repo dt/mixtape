@@ -16,5 +16,7 @@ case class ItemMoved(id: String, nowBefore: String) extends ItemEvent
 case class ItemSkipped(id: String) extends ItemEvent
 
 case class PlaybackStarted(item: QueueItem) extends PlaybackEvent
+case class PlaybackProgress(pos: Double, ts: Long) extends PlaybackEvent
 case object PlaybackFinished extends PlaybackEvent
-case class PlaybackProgress(pos: Double) extends PlaybackEvent
+case object StartBroadcasting extends PlaybackEvent
+case object StopBroadcasting extends PlaybackEvent

@@ -34,7 +34,7 @@ object Application extends Controller with Secured {
     val room = Room(roomId.toLowerCase)
 
     val iteratee = Iteratee.foreach[JsValue] { case o: JsObject =>
-      user(request).foreach{ u =>
+      user(request).foreach { u =>
         Logger.debug("websocket message: " + o.toString)
         (o \ "event").asOpt[String] match {
           case Some("add") =>
@@ -47,15 +47,23 @@ object Application extends Controller with Secured {
             id <- (o \ "id").asOpt[String]
             putBefore = (o \ "putBefore").asOpt[String].filterNot(_ == "")
           } room.moveItem(id, putBefore, u)
-          case Some("finished") => room.playNext()
-          case Some("progress") => room.updatePlaybackPosition((o \ "pos").as[Double])
+          case Some("finished") => room.playNext(u)
+          case Some("progress") => room.updatePlaybackPosition((o \ "pos").as[Double], (o \ "ts").as[Long], u)
+
+          case Some("listening") => room.startedListening(u)
+          case Some("stopped-listening") => room.stoppedListening(u)
+          case Some("broadcasting") => room.startedBroadcasting(u)
+          case Some("stopped-broadcasting") => room.stoppedBroadcasting(u)
+
           case Some(unknown) => Logger.error("unknown event: " + unknown)
           case None => Logger.error("missing event! " + o.toString)
         }
       }; case _ => //pass
+    }.mapDone { _ =>
+      room.left(user(request))
     }
 
-    (iteratee, room.enum)
+    (iteratee, room.join(user(request)))
   }
 
   def debug = Action { implicit request =>
