@@ -24,6 +24,7 @@ object ModelJson {
   implicit val ItemUpdatedWrites = event("updated")(Json.writes[ItemUpdated])
   implicit val ItemMovedWrites = event("moved")(Json.writes[ItemMoved])
   implicit val ItemSkippedWrites = event("skipped")(Json.writes[ItemSkipped])
+  implicit val PlaybackSkippedWrites = event("playing-song-skipped")(Json.writes[PlaybackSkipped])
 
   implicit val PlaybackStartedWrites = event("started")(Json.writes[PlaybackStarted])
   implicit val PlaybackFinishedWrites = new Writes[PlaybackFinished.type] {

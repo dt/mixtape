@@ -171,5 +171,3 @@ class window.Player
         @rdio.play @playing.track.id, {initialPosition: @playing.position}
 
   renderLocalPlaybackState: => $("#local-playback").toggleClass('disabled', !@localPlayback)
-
-

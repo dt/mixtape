@@ -70,13 +70,26 @@ class Room(val name: String) {
   }
 
   def voteDown(id: String, who: User) = {
-    val item = queue(id)
-    if (item.by == who) {
-      queue.remove(id)
-      channel.push(Json.toJson(ItemSkipped(item.id)))
-    } else {
-      item.votes.down += who
-      channel.push(Json.toJson(ItemUpdated(item)))
+    (queue.get(id), playing) match {
+      case (_, Some(item)) if item.id == id => {
+        item.votes.down += who
+        if (item.by == who || item.votes.down.size > (item.votes.up + item.by).size) {
+          playing = None
+          channel.push(Json.toJson(PlaybackSkipped(item.id)))
+          playNext(who)
+        } else {
+          channel.push(Json.toJson(ItemUpdated(item)))
+        }
+      }
+      case (Some(item), _) => {
+        if (item.by == who) {
+          queue.remove(id)
+          channel.push(Json.toJson(ItemSkipped(item.id)))
+        } else {
+          item.votes.down += who
+          channel.push(Json.toJson(ItemUpdated(item)))
+        }
+      }
     }
   }
 
