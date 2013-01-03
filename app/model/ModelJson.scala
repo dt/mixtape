@@ -9,6 +9,8 @@ object ModelJson {
     override def writes(o: T): JsObject = fmt.writes(o) + ("event" -> JsString(e))
   }
 
+  implicit val ErrorMsgWrites = event("error")(Json.writes[ErrorMsg])
+
   implicit val trackReads = Json.reads[Track]
   implicit val trackWrites = Json.writes[Track]
 
@@ -43,8 +45,8 @@ object ModelJson {
     override def writes(o: Room) = Json.obj(
       "playing" -> o.playing.map(x => QueueItemWrites.writes(x) + ("position" -> JsNumber(o.playbackPosition))),
       "lurkers" -> JsNumber(o.anonUsers),
-      "listeners" -> JsArray(o.listening.toSeq.flatMap(i => o.users.get(i).map(Json.toJson(_)))),
-      "broadcasters" -> JsArray(o.broadcasting.toSeq.flatMap(i => o.users.get(i).map(Json.toJson(_)))),
+      "listeners" -> JsArray(o.listening.toSeq.flatMap(i => o.users.get(i).map(u => Json.toJson(u.user)))),
+      "broadcasters" -> JsArray(o.broadcasting.toSeq.flatMap(i => o.users.get(i).map(u => Json.toJson(u.user)))),
       "queue" -> JsArray(o.queue.values.toSeq.map(i => Json.toJson(i)))
     )
   }

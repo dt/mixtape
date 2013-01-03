@@ -1,7 +1,8 @@
 package model
 
 import scala.collection.mutable
-import play.api.libs.iteratee._
+import play.api.libs.iteratee.Concurrent
+import play.api.libs.iteratee.Concurrent._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import ModelJson._
@@ -12,14 +13,15 @@ object Room {
   def list = all.keys
 }
 
+case class UserChannel(user: User, channel: Channel[JsValue])
+
 class Room(val name: String) {
   var playing: Option[QueueItem] = None
   var playbackPosition = 0.0
   val queue = new lib.HashQueue[String, QueueItem]
   val (bcast, channel) = Concurrent.broadcast[JsValue]
 
-  val channels = mutable.Map.empty[String, PushEnumerator[JsValue]]
-  val users = mutable.Map.empty[String, User]
+  val users = mutable.Map.empty[String, UserChannel]
   val listening = mutable.Set.empty[String]
   val broadcasting = mutable.Set.empty[String]
 
@@ -28,8 +30,7 @@ class Room(val name: String) {
   def join(user: Option[User]) = {
     user match {
       case Some(u) => {
-        val unicast = Enumerator.imperative[JsValue](onStart = () => this.joined(u))
-        channels.put(u.id, unicast)
+        val unicast = Concurrent.unicast[JsValue](onStart = channel => users.put(u.id, UserChannel(u, channel)))
         unicast.interleave(bcast)
       }
       case None => {
@@ -39,16 +40,12 @@ class Room(val name: String) {
     }
   }
 
-  def joined(u: User) = {
-    users.put(u.id, u)
-  }
-
   def left(user: Option[User]) = {
     user match {
       case Some(u) => {
         users.remove(u.id)
         stoppedListening(u)
-        channels.remove(u.id)
+        users.remove(u.id)
         checkBroadcasting()
       }
       case None => anonUsers -= 1
@@ -102,10 +99,15 @@ class Room(val name: String) {
     channel.push(Json.toJson(ItemMoved(id, nowBefore.getOrElse(""))))
   }
 
-  def shouldSkip(item: QueueItem): Boolean =
+  protected def shouldSkip(item: QueueItem): Boolean =
     item.votes.down.size > item.votes.up.size
 
-  def playNext(who: User) {
+  def finishedPlaying(id: String, who: User) = {
+    if (playing.exists(_.id == id))
+      playNext(who)
+  }
+
+  protected def playNext(who: User) {
     queue.pop() match {
       case None => {
         playing = None
@@ -130,7 +132,7 @@ class Room(val name: String) {
   def startedListening(u: User) = {
     listening.add(u.id)
     if (broadcasting.size < 1)
-      channels.get(u.id).foreach(_.push(Json.toJson(StartBroadcasting)))
+      users.get(u.id).foreach(_.channel.push(Json.toJson(StartBroadcasting)))
   }
 
   def stoppedListening(u: User) = {
@@ -140,7 +142,7 @@ class Room(val name: String) {
 
   def startedBroadcasting(u: User) = {
     if (broadcasting.size > 0)
-      broadcasting.flatMap(channels.get).foreach(_.push(Json.toJson(StopBroadcasting)))
+      broadcasting.flatMap(users.get).foreach(_.channel.push(Json.toJson(StopBroadcasting)))
     broadcasting.add(u.id)
   }
 
@@ -149,9 +151,13 @@ class Room(val name: String) {
     checkBroadcasting(not = Some(u))
   }
 
-  def checkBroadcasting(not: Option[User] = None) = {
+  protected def checkBroadcasting(not: Option[User] = None) = {
     if (broadcasting.size < 1)
       not.map(u => listening.filterNot(_ == u.id)).filterNot(_.isEmpty).getOrElse(listening)
-        .collectFirst(channels).foreach(_.push(Json.toJson(StartBroadcasting)))
+        .collectFirst(users).foreach(_.channel.push(Json.toJson(StartBroadcasting)))
+  }
+
+  def sendError(to: String, msg: String) = {
+    users.get(to).foreach(_.channel.push(Json.toJson(ErrorMsg(msg))))
   }
 }

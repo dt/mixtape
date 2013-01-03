@@ -9,6 +9,7 @@ case class QueueItem(id: String, track: Track, by: User, votes: Votes = Votes())
 trait Event
 trait ItemEvent extends Event
 trait PlaybackEvent extends Event
+case class ErrorMsg(msg: String) extends Event
 
 case class ItemAdded(item: QueueItem) extends ItemEvent
 case class ItemUpdated(item: QueueItem) extends ItemEvent
