@@ -2,18 +2,15 @@ class Main
   constructor: (@room, rdioToken) ->
     @$content = $("#content")
     @queue = new Queue(this)
-    @player = new Player(this, $("#player"), rdioToken)
-    this.reconnect () =>
-      @player.toggleLocalPlayback()
-      this.reloadState()
-    new Search(this, $("#searchterm"), $("#searchresults"))
+    @player = new Player this, $("#player"), rdioToken, () =>
+      this.reconnect () => this.reloadState () => @player.toggleLocalPlayback()
+      new Search(this, $("#searchterm"), $("#searchresults"))
 
-
-
-  reloadState: =>
+  reloadState: (f) =>
     jsRoutes.controllers.Application.queue(@room).ajax({success: (o) =>
       @queue.render(o.queue)
       @player.setPlaying(o.playing)
+      f() if f
     })
 
 
@@ -40,6 +37,7 @@ class Main
       when "added" then  @queue.itemAdded(o.item)
       when "updated" then @queue.itemUpdated(o.item)
       when "skipped"  then @queue.itemSkipped(o.id)
+      when "playing-song-skipped" then @player.skip(o.id)
       when "moved"  then @queue.itemMoved(o.id, o.nowBefore)
       when "started" then @player.start(o.item)
       when "progress" then @player.updatePosition(o.pos, o.ts)
@@ -53,9 +51,6 @@ class Main
   send: (msg) =>
     console.log "send: ", msg unless msg.event == "progress"
     @sock.send JSON.stringify msg
-
-  reportPlaybackFinished: =>
-    this.send({event: "finished"})
 
 jQuery ->
   window.mixtape = new Main(ROOM, RDIOTOKEN)

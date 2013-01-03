@@ -65,30 +65,34 @@ class window.Player
   localPlayback: false
   sendPlaybackEvents: false
 
-  constructor: (@main, @$player, token) ->
+  constructor: (@main, @$player, token, f) ->
     $("#local-playback").click this.toggleLocalPlayback
     $("#playback-master").click this.toggleSendEvents
     this.renderSendEventsState()
     this.renderLocalPlaybackState()
     @totalCorrection = 0
-    @rdio = this.setupRdio(@$player.find('.rdio'), token)
+    @rdio = this.setupRdio(@$player.find('.rdio'), token, f)
     $("#playback-lag").click this.resyncPosition
 
-  setupRdio: ($rdio, token) =>
+  setupRdio: ($rdio, token, f) =>
     $rdio.bind 'ready.rdio', (_, userinfo) =>
       if (userinfo.isSubscriber)
+        @canPlayLocally = true
         $("#local-playback").addClass("clickable")
       else
+        @canPlayLocally = false
         console.log "rdio is ready", userinfo
         alert("you need to be logged in to rdio")
+      f() if f
 
     $rdio.bind 'playingTrackChanged.rdio', (e, playingTrack, sourcePosition) =>
 
     $rdio.bind 'positionChanged.rdio', (e, pos) => this.localPlaybackPositionChanged(pos)
 
     $rdio.bind 'playStateChanged.rdio', (e, newState) =>
-      if @playbackState == 1 && newState == 2
-        @main.reportPlaybackFinished(@playing.id) if @sendPlaybackEvents
+      if @playbackState == 1 && newState == 2 && !@skipping
+        this.localPlaybackFinished() if @sendPlaybackEvents
+      @skipping = false
       @playbackState = newState
     $rdio.rdio(token)
 
@@ -100,8 +104,10 @@ class window.Player
     @main.queue.itemPlayed(item.id)
 
   setPlaying: (item) =>
+    @skipping = @playbackState == 1
     @playing = item
     if @playing
+      @playing.ts = this.timestamp()
       @$player.addClass("playing")
       this.renderPlaybackPosition()
       @$player.find(".name").text(@playing.track.name)
@@ -110,9 +116,13 @@ class window.Player
         e.stopPropagation()
         @main.showArtist(@playing.track.artistKey)
     else
+      @rdio.stop() if @localPlayback
       @$player.removeClass("playing")
 
   timestamp: -> new Date().getTime()
+
+  localPlaybackFinished: =>
+    @main.send({event: "finished", id: @playing.id})
 
   localPlaybackPositionChanged: (pos) =>
     now = this.timestamp()
@@ -158,7 +168,7 @@ class window.Player
     $("#playback-master").toggleClass('disabled', !@sendPlaybackEvents).toggleClass("clickable", @localPlayback)
 
   toggleLocalPlayback: () =>
-    @localPlayback = ! @localPlayback
+    @localPlayback = @canPlayLocally && !@localPlayback
     this.renderLocalPlaybackState()
     if (!@localPlayback)
       @main.send({"event": "stopped-listening"})

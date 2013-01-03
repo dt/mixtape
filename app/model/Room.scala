@@ -56,7 +56,7 @@ class Room(val name: String) {
     val e = QueueItem(track.id, track , by)
     queue.push(track.id -> e)
     channel.push(Json.toJson(ItemAdded(e)))
-    if (queue.size == 1 && playing.isEmpty)
+    if (playing.isEmpty && queue.size == 1)
       playNext(by)
   }
 

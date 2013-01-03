@@ -35,7 +35,8 @@ object Application extends Controller with Secured {
 
     val iteratee = Iteratee.foreach[JsValue] { case o: JsObject =>
       user(request).foreach { u =>
-        Logger.debug("websocket message: " + o.toString)
+        if ((o \ "event").asOpt[String].forall(_ != "progress"))
+          Logger.debug("websocket message: " + o.toString)
         try {
           (o \ "event").asOpt[String] match {
             case Some("add") =>
