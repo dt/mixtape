@@ -99,9 +99,6 @@ class Room(val name: String) {
     channel.push(Json.toJson(ItemMoved(id, nowBefore.getOrElse(""))))
   }
 
-  protected def shouldSkip(item: QueueItem): Boolean =
-    item.votes.down.size > item.votes.up.size
-
   def finishedPlaying(id: String, who: User) = {
     if (playing.exists(_.id == id))
       playNext(who)
@@ -113,7 +110,7 @@ class Room(val name: String) {
         playing = None
         channel.push(Json.toJson(PlaybackFinished))
       }
-      case Some(next) if shouldSkip(next) => {
+      case Some(next) if next.shouldSkip => {
         channel.push(Json.toJson(ItemSkipped(next.id)))
         playNext(who)
       }

@@ -16,22 +16,25 @@
 
     <div class="span3 well">
       <div id="player">
-        <div id="mode">
-          <img id="local-playback" src="@routes.Assets.at("images/img/glyphicons_184_volume_up.png")" title="local playback" />
-        </div>
+        <a id="local-playback" title="local playback"></a>
         <div id="playing">
-          <img class="icon">
-          <span class="name"></span>
-          <div class="details">
-            <a class="trackartist"></a>
+          <div id="trackdata">
+            <img class="icon">
+            <span class="name"></span>
+            <div class="details">
+              <a class="trackartist"></a>
+            </div>
+            <div class="clearfix"></div>
           </div>
-          <div class="clearfix"></div>
-          <div class="progress">
-            <div class="bar"></div>
-          </div>
-          <div id="position"></div>
           <a class="vote-up"></a>
           <a class="vote-down"></a>
+
+          <div class="clearfix"></div>
+
+          <div id="progress" class="progress">
+            <div class="bar"></div>
+            <div id="position"></div>
+          </div>
         </div>
         <div class="rdio"></div>
         <div class="clearfix"></div>

@@ -3,7 +3,9 @@ package model
 import scala.collection.mutable
 
 case class Votes(up: mutable.Set[User] = mutable.Set.empty, down: mutable.Set[User] = mutable.Set.empty)
-case class QueueItem(id: String, track: Track, by: User, votes: Votes = Votes())
+case class QueueItem(id: String, track: Track, by: User, votes: Votes = Votes()) {
+  def shouldSkip: Boolean = votes.down.size > votes.up.size
+}
 
 
 trait Event

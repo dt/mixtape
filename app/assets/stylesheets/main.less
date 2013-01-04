@@ -153,13 +153,16 @@
       outline: 1px dotted #ddd;
     }
   }
+  .trackdata {
+    width: 300px;
+    float: left;
+  }
 }
 
 
 #local-playback {
-  width: 20px;
-  height: 20px;
-  padding: 5px;
+  .iconbutton;
+  background-image: url('/assets/images/img/glyphicons_184_volume_up.png');
 }
 
 #playback-master {
@@ -173,52 +176,64 @@ footer * {
   opacity: 0.75;
 }
 
-.vote {
-  width: 10px;
-  height: 10px;
-  background-size: 10px 10px;
+.iconbutton {
+  width: 15px;
+  height: 15px;
+  padding: 5px;
   display: inline-block;
   .clickable;
-  float: left;
+  float: right;
+  background-repeat:  no-repeat;
+  background-position:  center;
+  background-size: 15px 15px;
 }
+
 .vote-up {
-  .vote;
+  .iconbutton;
   background-image: url('/assets/images/img/glyphicons_343_thumbs_up.png');
 }
 .vote-down {
-  .vote;
+  .iconbutton;
   background-image: url('/assets/images/img/glyphicons_344_thumbs_down.png');
 }
 
 
 #player {
-  #mode {
-    float: right;
-  }
-
   #playing {
     display: none;
-    .name, .details {
-      display: block;
-      .text-overflow;
-    }
-
-    .details, .details a {
-      color: #666666;
-    }
-
-    .trackartist {
-      .clickable;
-    }
-
-    .icon {
-      width: 70px;
+    #trackdata {
+      margin-bottom: 5px;
       float: left;
-      margin-right: 1em;
+      width: 300px;
+      .name, .details {
+        display: block;
+        .text-overflow;
+      }
+
+      .details, .details a {
+        color: #666666;
+      }
+
+      .trackartist {
+        .clickable;
+      }
+
+      .icon {
+        width: 70px;
+        float: left;
+        margin-right: 1em;
+      }
     }
   }
   &.playing #playing {
     display: block;
+  }
+  #progress {
+    position: relative;
+    #position {
+      position: absolute;
+      right: 5px;
+    }
   }
   .rdio {
     height: 1px;

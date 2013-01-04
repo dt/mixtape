@@ -43,13 +43,16 @@ class window.Queue
     this.fillItem(res, $("<div>").addClass("enqueued").attr("id", Queue.id(res.id)).data("id", res.id))
 
   fillItem: (res, $r) =>
-    $r.append $("<img>").addClass("icon").attr("src", res.track.icon).click (e) =>
+    $tdata = $("<div>").addClass("trackdata")
+    $r.append $tdata
+
+    $tdata.append $("<img>").addClass("icon").attr("src", res.track.icon).click (e) =>
       e.stopPropagation()
       @main.showAlbum(res.track.albumKey)
 
-    $r.append $("<span>").addClass("name").text(res.track.name)
+    $tdata.append $("<span>").addClass("name").text(res.track.name)
     $from = $("<div>").addClass("details")
-    $r.append $from
+    $tdata.append $from
 
     $from.append $("<a>").addClass("trackartist").text(res.track.artist).click (e) =>
       e.stopPropagation()
