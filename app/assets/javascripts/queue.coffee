@@ -35,14 +35,16 @@ class window.Queue
   itemMoved: (id, nowBefore) => this.findOrReload id, ($r) =>
     if nowBefore then $r.insertBefore($("#" + Queue.id(nowBefore))) else @$queue.append($r)
 
-  itemPlayed: (id) => this.findOrReload(id, ($r) => $r.slideUp(250, (e) => $(e).remove()))
+  itemPlayed: (id) => this.findOrReload(id, ($r) => $r.slideUp(250, () => $r.remove()))
   itemSkipped: (id) => this.findOrReload id, ($r) =>
-    $r.hide "slide", {"direction": "right"}, 200, (e) => $(e).remove()
+    $r.hide "slide", {"direction": "right"}, 200, (e) => $r.remove()
 
   renderItem: (res) =>
     this.fillItem(res, $("<div>").addClass("enqueued").attr("id", Queue.id(res.id)).data("id", res.id))
 
   fillItem: (res, $r) =>
+    $r.toggleClass "skipping", res.skipping == true
+    console.log res
     $tdata = $("<div>").addClass("trackdata")
     $r.append $tdata
 
@@ -80,14 +82,15 @@ class window.Player
 
   setupRdio: ($rdio, token, f) =>
     $rdio.bind 'ready.rdio', (_, userinfo) =>
-      if (userinfo.isSubscriber)
+      console.log("rdio is ready.")
+      if (userinfo && userinfo.isSubscriber)
+        console.log "rdio subscriber! good!", userinfo
         @canPlayLocally = true
         $("#local-playback").addClass("clickable")
       else
         @canPlayLocally = false
-        console.log "rdio is ready", userinfo
-        alert("you need to be logged in to rdio")
-      f() if f
+        console.warn("you need to be logged in to rdio", userinfo)
+      f() if f != undefined
 
     $rdio.bind 'playingTrackChanged.rdio', (e, playingTrack, sourcePosition) =>
 
@@ -98,6 +101,7 @@ class window.Player
         this.localPlaybackFinished() if @sendPlaybackEvents
       @skipping = false
       @playbackState = newState
+    console.log("setting up rdio...")
     $rdio.rdio(token)
 
   start: (item) =>

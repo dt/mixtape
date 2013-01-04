@@ -24,9 +24,10 @@ object ModelJson {
 
   implicit val TrackAddedWrites = event("added")(Json.writes[ItemAdded])
   implicit val ItemUpdatedWrites = new Writes[ItemUpdated] {
-    override def writes(o: ItemUpdated) = Json.writes[ItemUpdated].writes(o) +
-      ("event" -> JsString("updated")) +
-      ("skipping" -> JsBoolean(o.item.shouldSkip))
+    override def writes(o: ItemUpdated) =  Json.obj(
+      "event" -> JsString("updated"),
+      "item" -> (QueueItemWrites.writes(o.item) + ("skipping" -> JsBoolean(o.item.shouldSkip)))
+    )
   }
   implicit val ItemMovedWrites = event("moved")(Json.writes[ItemMoved])
   implicit val ItemSkippedWrites = event("skipped")(Json.writes[ItemSkipped])
