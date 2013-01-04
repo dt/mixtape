@@ -13,7 +13,6 @@ class Main
       f() if f
     })
 
-
   showArtist: (r) => jsRoutes.controllers.Rdio.artist(r).ajax({success: (o) => new Artist(this, o).show()})
   showAlbum: (a) => jsRoutes.controllers.Rdio.album(a).ajax({success: (o) => new Album(this, o).show()})
 
@@ -32,7 +31,7 @@ class Main
 
   handleMsg: (msg) =>
     o = JSON.parse msg.data
-    console.log "recv: ", o unless o.event == "progress"
+    console.debug "recv: ", o unless o.event == "progress"
     switch o.event
       when "added" then  @queue.itemAdded(o.item)
       when "updated" then @queue.itemUpdated(o.item)
@@ -49,7 +48,7 @@ class Main
         console.warn "unknown event: " + o.event, o
 
   send: (msg) =>
-    console.log "send: ", msg unless msg.event == "progress"
+    console.debug "send: ", msg unless msg.event == "progress"
     @sock.send JSON.stringify msg
 
 jQuery ->

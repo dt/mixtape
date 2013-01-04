@@ -8,17 +8,16 @@ class window.Queue
     });
     @$queue.disableSelection();
 
-  addTrack: (id, name, artist, album, albumKey, art, duration) =>
-    @main.send({
-      event: "add",
-      id: id,
-      name: name,
-      artist: artist,
-      album: album,
-      albumKey: albumKey,
-      icon: art,
-      duration: duration
-    })
+  addTrack: (id, name, artist, album, albumKey, art, duration) => @main.send({
+    event: "add",
+    id: id,
+    name: name,
+    artist: artist,
+    album: album,
+    albumKey: albumKey,
+    icon: art,
+    duration: duration
+  })
 
   moveItem: (id, putBefore) => @main.send({event: "move", id: id, putBefore: putBefore})
 
@@ -58,6 +57,8 @@ class window.Queue
     $from.append $("<a>").addClass("trackalbum").text(res.track.album).click (e) =>
       e.stopPropagation()
       @main.showAlbum(res.track.albumKey)
+    $r.append $("<a>").addClass("vote-up").click () => this.voteUp(res.id)
+    $r.append $("<a>").addClass("vote-down").click () => this.voteDown(res.id)
     $r.append $("<div>").addClass("clearfix")
     $r
 
@@ -103,21 +104,33 @@ class window.Player
       @rdio.play(@playing.track.id, {initialPosition: @totalCorrection})
     @main.queue.itemPlayed(item.id)
 
+  skip: (id) =>
+    display = @$player.find("#playing")
+    if display.data("id") == id
+      display.hide()
+
   setPlaying: (item) =>
     @skipping = @playbackState == 1
     @playing = item
+    display = @$player.find("#playing")
     if @playing
+      display.data("id", item.id)
       @playing.ts = this.timestamp()
       @$player.addClass("playing")
       this.renderPlaybackPosition()
-      @$player.find(".name").text(@playing.track.name)
-      @$player.find(".icon").attr("src", @playing.track.icon)
-      @$player.find(".trackartist").text(@playing.track.artist).click (e) =>
+      display.find(".name").text(@playing.track.name)
+      display.find(".icon").attr("src", @playing.track.icon)
+      display.find(".trackartist").text(@playing.track.artist).unbind('click').click (e) =>
         e.stopPropagation()
         @main.showArtist(@playing.track.artistKey)
+      display.find(".vote-up").unbind('click').click () => @main.queue.voteUp(@playing.id)
+      display.find(".vote-down").unbind('click').click () => @main.queue.voteDown(@playing.id)
+      display.show()
     else
       @rdio.stop() if @localPlayback
+      display.hide()
       @$player.removeClass("playing")
+      display.data("id", "")
 
   timestamp: -> new Date().getTime()
 
@@ -160,7 +173,7 @@ class window.Player
   toggleSendEvents: () => this.setSendEvents(@localPlayback && !@sendPlaybackEvents)
 
   setSendEvents: (enabled) =>
-    @sendPlaybackEvents = !!enabled
+    @sendPlaybackEvents = @localPlayback && !!enabled
     @main.send({"event": if @sendPlaybackEvents then "broadcasting" else "stopped-broadcasting"})
     this.renderSendEventsState()
 

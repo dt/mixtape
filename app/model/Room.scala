@@ -136,8 +136,8 @@ class Room(val name: String) {
   }
 
   def stoppedListening(u: User) = {
-    stoppedBroadcasting(u)
     listening.remove(u.id)
+    stoppedBroadcasting(u)
   }
 
   def startedBroadcasting(u: User) = {

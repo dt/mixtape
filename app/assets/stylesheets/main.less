@@ -173,6 +173,24 @@ footer * {
   opacity: 0.75;
 }
 
+.vote {
+  width: 10px;
+  height: 10px;
+  background-size: 10px 10px;
+  display: inline-block;
+  .clickable;
+  float: left;
+}
+.vote-up {
+  .vote;
+  background-image: url('/assets/images/img/glyphicons_343_thumbs_up.png');
+}
+.vote-down {
+  .vote;
+  background-image: url('/assets/images/img/glyphicons_344_thumbs_down.png');
+}
+
+
 #player {
   #mode {
     float: right;

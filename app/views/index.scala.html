@@ -1,5 +1,4 @@
 @(room: String, rooms: Iterable[String], playbackToken: String)(implicit request: MaybeAuthenticatedRequest)
-
 @main("mixtape", room, rooms) {
 <div class="container-fluid">
   <div class="row-fluid">
@@ -31,8 +30,9 @@
             <div class="bar"></div>
           </div>
           <div id="position"></div>
+          <a class="vote-up"></a>
+          <a class="vote-down"></a>
         </div>
-
         <div class="rdio"></div>
         <div class="clearfix"></div>
       </div>
@@ -53,7 +53,7 @@
     <p class="debug">
       <img id="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
       ε <a id="playback-lag" class="clickable" title="resync"></a>
-      Δ <span id="total-correction"></a>
+      Δ <span id="total-correction"></span>
 
     </p>
   </footer>
