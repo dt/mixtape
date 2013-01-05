@@ -22,7 +22,7 @@ class Room(val name: String) {
 
   load()
 
-  val (bcast, channel) = Concurrent.broadcast[JsValue]
+  val (bcast, everyone) = Concurrent.broadcast[JsValue]
 
   val users = mutable.Map.empty[String, UserChannel]
   val listening = mutable.Set.empty[String]
@@ -33,11 +33,16 @@ class Room(val name: String) {
   def join(user: Option[User]) = {
     user match {
       case Some(u) => {
-        val unicast = Concurrent.unicast[JsValue](onStart = channel => users.put(u.id, UserChannel(u, channel)))
+        val unicast = Concurrent.unicast[JsValue](onStart = channel => {
+          guestlistChanged()
+          users.put(u.id, UserChannel(u, channel))
+        })
+
         unicast.interleave(bcast)
       }
       case None => {
         anonUsers += 1
+        guestlistChanged()
         bcast
       }
     }
@@ -55,17 +60,30 @@ class Room(val name: String) {
     }
   }
 
+  def guestlistChanged() = {
+    val guestlist = LeaveJoin(
+      users.values.map(_.user).toSet,
+      listening.flatMap(users.get(_).map(_.user)).toSet,
+      anonUsers)
+
+    everyone.push(Json.toJson(guestlist))
+  }
+
+  def say(msg: String, who: User) = {
+    everyone.push(Json.toJson(Chat(msg, who)))
+  }
+
   def enqueue(track: Track, by: User) = {
     val e = QueueItem(track.id, track , by)
     queue.push(track.id -> e)
-    channel.push(Json.toJson(ItemAdded(e)))
+    everyone.push(Json.toJson(ItemAdded(e)))
     if (playing.isEmpty && queue.size == 1)
       playNext()
     dump()
   }
 
   def updated(item: QueueItem) = {
-    channel.push(Json.toJson(ItemUpdated(item)))
+    everyone.push(Json.toJson(ItemUpdated(item)))
     dump()
   }
 
@@ -89,7 +107,7 @@ class Room(val name: String) {
         if (item.by == who) { // enqueuer's downvote results in instant removal
           queue.remove(id)
           dump()
-          channel.push(Json.toJson(ItemSkipped(item.id)))
+          everyone.push(Json.toJson(ItemSkipped(item.id)))
         } else {
           item.votes.down += who
           updated(item)
@@ -101,7 +119,7 @@ class Room(val name: String) {
   def skipPlaying(item: QueueItem) = {
     playing = None
     playNext()
-    channel.push(Json.toJson(PlaybackSkipped(item.id)))
+    everyone.push(Json.toJson(PlaybackSkipped(item.id)))
     dump()
   }
 
@@ -111,7 +129,7 @@ class Room(val name: String) {
       case Some(before) => queue.moveTo(id, before)
       case None => queue.remove(id).foreach(x => queue.push(id -> x))
     }
-    channel.push(Json.toJson(ItemMoved(id, nowBefore.getOrElse(""))))
+    everyone.push(Json.toJson(ItemMoved(id, nowBefore.getOrElse(""))))
     dump()
   }
 
@@ -124,23 +142,23 @@ class Room(val name: String) {
     queue.pop() match {
       case None => {
         playing = None
-        channel.push(Json.toJson(PlaybackFinished))
+        everyone.push(Json.toJson(PlaybackFinished))
       }
       case Some(next) if next.shouldSkip => {
-        channel.push(Json.toJson(ItemSkipped(next.id)))
+        everyone.push(Json.toJson(ItemSkipped(next.id)))
         playNext()
       }
       case Some(next) =>
         playing = Some(next)
         playbackPosition = 0.0
-        channel.push(Json.toJson(PlaybackStarted(next)))
+        everyone.push(Json.toJson(PlaybackStarted(next)))
     }
     dump()
   }
 
   def updatePlaybackPosition(pos: Double, ts: Long, who: User) = {
     playbackPosition = pos
-    channel.push(Json.toJson(PlaybackProgress(pos, ts)))
+    everyone.push(Json.toJson(PlaybackProgress(pos, ts)))
   }
 
   def startedListening(u: User) = {
@@ -179,7 +197,7 @@ class Room(val name: String) {
 
   def load() = {
     try {
-      val dump = Json.parse(play.api.libs.Files.readFile(roomFile)).as[Dump]
+      val dump = Json.parse(play.api.libs.Files.readFile(roomFile)).as[Queue]
       playing = dump.playing
       dump.queue.foreach(i => queue.push(i.id -> i))
     } catch {
@@ -189,7 +207,7 @@ class Room(val name: String) {
 
   def dump() = {
     try {
-      play.api.libs.Files.writeFile(roomFile, Json.toJson(Dump(playing, queue.values.toList)).toString)
+      play.api.libs.Files.writeFile(roomFile, Json.toJson(Queue(playing, queue.values.toList)).toString)
     } catch {
       case e: Exception => //Logger.warn("could not write queue", e)
     }

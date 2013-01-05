@@ -25,9 +25,11 @@ object ModelJson {
   implicit val queueItemReads = Json.reads[QueueItem]
   implicit val listReads = Reads.traversableReads[Seq, QueueItem]
   implicit val listWrites = Writes.traversableWrites[QueueItem]
+  implicit val chatWrites = event("chat")(Json.writes[Chat])
+  implicit val leaveJoinWrites = event("leavejoin")(Json.writes[LeaveJoin])
 
-  implicit val dumpReads = Json.reads[Dump]
-  implicit val dumpWrites = Json.writes[Dump]
+  implicit val queueReads = Json.reads[Queue]
+  implicit val queueWrites = Json.writes[Queue]
 
   implicit val trackAddedWrites = event("added")(Json.writes[ItemAdded])
   implicit val itemUpdatedWrites = new Writes[ItemUpdated] {
