@@ -1,10 +1,13 @@
 class Main
   constructor: (@room, rdioToken) ->
+    @connected = false
     @$content = $("#content")
     @queue = new Queue(this)
     @player = new Player this, $("#player"), rdioToken, () =>
       this.reconnect () => this.reloadState () => @player.toggleLocalPlayback()
-      new Search(this, $("#searchterm"), $("#searchresults"))
+
+    new Search(this, $("#searchterm"), $("#searchresults"))
+    window.setTimeout this.checkConnection, 5000
 
   reloadState: (f) =>
     jsRoutes.controllers.Application.queue(@room).ajax({success: (o) =>
@@ -21,13 +24,20 @@ class Main
     sock = new WebSocket(jsRoutes.controllers.Application.controls(@room).webSocketURL())
     sock.onmessage = this.handleMsg
     sock.onclose = () =>
+      @connected = false
       console.error "Socket Closed!"
       window.setTimeout (() => this.reconnect()), 15000
-    sock.onopen = f
+    sock.onopen = () =>
+      @connected = true
+      f() if f
     sock
   reconnect: (f) =>
     @sock = this.openSocket () =>
       if f then f() else this.reloadState()
+
+  checkConnection: =>
+    this.reconnect() unless @connected
+
 
   handleMsg: (msg) =>
     o = JSON.parse msg.data
