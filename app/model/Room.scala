@@ -57,37 +57,45 @@ class Room(val name: String) {
     queue.push(track.id -> e)
     channel.push(Json.toJson(ItemAdded(e)))
     if (playing.isEmpty && queue.size == 1)
-      playNext(by)
+      playNext()
   }
 
-  def voteUp(id: String, who: User) = {
-    val item = queue(id)
-    item.votes.up += who
+  def updated(item: QueueItem) = {
     channel.push(Json.toJson(ItemUpdated(item)))
   }
 
+  def voteUp(id: String, who: User) = {
+    playing.filter(_.id == id).orElse(queue.get(id)).filterNot(_.by == who).foreach { item =>
+      item.votes.up += who
+      updated(item)
+    }
+  }
+
   def voteDown(id: String, who: User) = {
-    (queue.get(id), playing) match {
-      case (_, Some(item)) if item.id == id => {
+    // check the currently playing track first
+    playing.filter(_.id == id) match {
+      case Some(item) if item.by == who => // enqueuer wants to skip currently playing track
+        skipPlaying(item)
+      case Some(item) => { // someone else wants to skip currently playing track
         item.votes.down += who
-        if (item.by == who || item.votes.down.size > (item.votes.up + item.by).size) {
-          playing = None
-          channel.push(Json.toJson(PlaybackSkipped(item.id)))
-          playNext(who)
-        } else {
-          channel.push(Json.toJson(ItemUpdated(item)))
-        }
+        if (item.votes.down.size > item.votes.up.size) skipPlaying(item) else updated(item)
       }
-      case (Some(item), _) => {
-        if (item.by == who) {
+      case None => queue.get(id).foreach { item => // look for the downvoted item in the queue
+        if (item.by == who) { // enqueuer's downvote results in instant removal
           queue.remove(id)
           channel.push(Json.toJson(ItemSkipped(item.id)))
         } else {
           item.votes.down += who
-          channel.push(Json.toJson(ItemUpdated(item)))
+          updated(item)
         }
       }
     }
+  }
+
+  def skipPlaying(item: QueueItem) = {
+    playing = None
+    playNext()
+    channel.push(Json.toJson(PlaybackSkipped(item.id)))
   }
 
   def moveItem(id: String, nowBefore: Option[String], who: User) = {
@@ -101,10 +109,10 @@ class Room(val name: String) {
 
   def finishedPlaying(id: String, who: User) = {
     if (playing.exists(_.id == id))
-      playNext(who)
+      playNext()
   }
 
-  protected def playNext(who: User) {
+  protected def playNext() {
     queue.pop() match {
       case None => {
         playing = None
@@ -112,7 +120,7 @@ class Room(val name: String) {
       }
       case Some(next) if next.shouldSkip => {
         channel.push(Json.toJson(ItemSkipped(next.id)))
-        playNext(who)
+        playNext()
       }
       case Some(next) =>
         playing = Some(next)
