@@ -7,7 +7,7 @@ class Main
       this.reconnect () => this.reloadState () => @player.toggleLocalPlayback()
 
     new Search(this, $("#searchterm"), $("#searchresults"))
-    window.setTimeout this.checkConnection, 5000
+    window.setTimeout this.checkConnection, 1500
 
   reloadState: (f) =>
     jsRoutes.controllers.Application.queue(@room).ajax({success: (o) =>
