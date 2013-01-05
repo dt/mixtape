@@ -19,6 +19,9 @@ class Room(val name: String) {
   var playing: Option[QueueItem] = None
   var playbackPosition = 0.0
   val queue = new lib.HashQueue[String, QueueItem]
+
+  load()
+
   val (bcast, channel) = Concurrent.broadcast[JsValue]
 
   val users = mutable.Map.empty[String, UserChannel]
@@ -58,10 +61,12 @@ class Room(val name: String) {
     channel.push(Json.toJson(ItemAdded(e)))
     if (playing.isEmpty && queue.size == 1)
       playNext()
+    dump()
   }
 
   def updated(item: QueueItem) = {
     channel.push(Json.toJson(ItemUpdated(item)))
+    dump()
   }
 
   def voteUp(id: String, who: User) = {
@@ -83,6 +88,7 @@ class Room(val name: String) {
       case None => queue.get(id).foreach { item => // look for the downvoted item in the queue
         if (item.by == who) { // enqueuer's downvote results in instant removal
           queue.remove(id)
+          dump()
           channel.push(Json.toJson(ItemSkipped(item.id)))
         } else {
           item.votes.down += who
@@ -96,6 +102,7 @@ class Room(val name: String) {
     playing = None
     playNext()
     channel.push(Json.toJson(PlaybackSkipped(item.id)))
+    dump()
   }
 
   def moveItem(id: String, nowBefore: Option[String], who: User) = {
@@ -105,6 +112,7 @@ class Room(val name: String) {
       case None => queue.remove(id).foreach(x => queue.push(id -> x))
     }
     channel.push(Json.toJson(ItemMoved(id, nowBefore.getOrElse(""))))
+    dump()
   }
 
   def finishedPlaying(id: String, who: User) = {
@@ -127,6 +135,7 @@ class Room(val name: String) {
         playbackPosition = 0.0
         channel.push(Json.toJson(PlaybackStarted(next)))
     }
+    dump()
   }
 
   def updatePlaybackPosition(pos: Double, ts: Long, who: User) = {
@@ -164,5 +173,25 @@ class Room(val name: String) {
 
   def sendError(to: String, msg: String) = {
     users.get(to).foreach(_.channel.push(Json.toJson(ErrorMsg(msg))))
+  }
+
+  def roomFile = new java.io.File("rooms/", name.replaceAll("[^a-z]", "") + ".json")
+
+  def load() = {
+    try {
+      val dump = Json.parse(play.api.libs.Files.readFile(roomFile)).as[Dump]
+      playing = dump.playing
+      dump.queue.foreach(i => queue.push(i.id -> i))
+    } catch {
+      case e: Exception => //Logger.warn("could not load queue", e)
+    }
+  }
+
+  def dump() = {
+    try {
+      play.api.libs.Files.writeFile(roomFile, Json.toJson(Dump(playing, queue.values.toList)).toString)
+    } catch {
+      case e: Exception => //Logger.warn("could not write queue", e)
+    }
   }
 }

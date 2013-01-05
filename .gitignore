@@ -11,3 +11,4 @@ dist
 /RUNNING_PID
 *.sublime-workspace
 conf/application.conf
+rooms/*
