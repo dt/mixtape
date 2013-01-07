@@ -9,13 +9,15 @@ import ModelJson._
 
 object Room {
   private val all = scala.collection.mutable.HashMap.empty[String, Room]
-  def apply(name: String) = this.synchronized { all.getOrElseUpdate(name, new Room(name)) }
+  def apply(name: String, user: Option[User]): Option[Room] = this.synchronized {
+    user.map(u => all.getOrElseUpdate(name, new Room(name, u))).orElse(all.get(name))
+  }
   def list = all.keys
 }
 
 case class UserChannel(user: User, channel: Channel[JsValue])
 
-class Room(val name: String) {
+class Room(val name: String, creator: User) {
   var playing: Option[QueueItem] = None
   var playbackPosition = 0.0
   val queue = new lib.HashQueue[String, QueueItem]
@@ -120,6 +122,7 @@ class Room(val name: String) {
 
   def skipPlaying(item: QueueItem) = {
     playing = None
+    playbackPosition = 0
     playNext()
     everyone.push(Json.toJson(PlaybackSkipped(item.id)))
     dump()
@@ -141,20 +144,22 @@ class Room(val name: String) {
   }
 
   protected def playNext() {
+    playing = None
+    playbackPosition = 0.0
+
     queue.pop() match {
-      case None => {
-        playing = None
+      case None =>
         everyone.push(Json.toJson(PlaybackFinished))
-      }
       case Some(next) if next.shouldSkip => {
         everyone.push(Json.toJson(ItemSkipped(next.id)))
         playNext()
       }
-      case Some(next) =>
+      case Some(next) => {
         playing = Some(next)
-        playbackPosition = 0.0
         everyone.push(Json.toJson(PlaybackStarted(next)))
+      }
     }
+
     dump()
   }
 
