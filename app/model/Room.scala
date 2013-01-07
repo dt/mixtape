@@ -74,8 +74,10 @@ class Room(val name: String) {
   }
 
   def enqueue(track: Track, by: User) = {
-    val e = QueueItem(track.id, track , by)
-    queue.push(track.id -> e)
+    val id = java.util.UUID.randomUUID().toString()
+    val e = QueueItem(id, track , by)
+
+    queue.push(e.id -> e)
     everyone.push(Json.toJson(ItemAdded(e)))
     if (playing.isEmpty && queue.size == 1)
       playNext()

@@ -44,7 +44,6 @@ class window.Queue
 
   fillItem: (res, $r) =>
     $r.toggleClass "skipping", res.skipping == true
-    console.log res
     $tdata = $("<div>").addClass("trackdata")
     $r.append $tdata
 

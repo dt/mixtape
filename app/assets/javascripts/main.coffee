@@ -5,6 +5,7 @@ class Main
     @queue = new Queue(this)
     @player = new Player this, $("#player"), rdioToken, () =>
       this.reconnect () => this.reloadState () => @player.toggleLocalPlayback()
+    @chat = new Chat(this)
 
     new Search(this, $("#searchterm"), $("#searchresults"))
     window.setTimeout this.checkConnection, 1500
@@ -43,18 +44,20 @@ class Main
     o = JSON.parse msg.data
     console.debug "recv: ", o unless o.event == "progress"
     switch o.event
-      when "added" then  @queue.itemAdded(o.item)
-      when "updated" then @queue.itemUpdated(o.item)
-      when "skipped"  then @queue.itemSkipped(o.id)
+      when "added" then               @queue.itemAdded(o.item)
+      when "updated" then             @queue.itemUpdated(o.item)
+      when "skipped"  then            @queue.itemSkipped(o.id)
       when "playing-song-skipped" then @player.skip(o.id)
-      when "moved"  then @queue.itemMoved(o.id, o.nowBefore)
-      when "started" then @player.start(o.item)
-      when "progress" then @player.updatePosition(o.pos, o.ts)
-      when "finished" then @player.setPlaying(false)
-      when "start-broadcasting" then @player.setSendEvents(true)
-      when "stop-broadcasting" then @player.setSendEvents(false)
+      when "moved"  then              @queue.itemMoved(o.id, o.nowBefore)
+      when "started" then             @player.start(o.item)
+      when "progress" then            @player.updatePosition(o.pos, o.ts)
+      when "finished" then            @player.setPlaying(false)
+      when "start-broadcasting" then  @player.setSendEvents(true)
+      when "stop-broadcasting" then   @player.setSendEvents(false)
+      when "leavejoin" then           @chat.guestlistChanged(o.users, o.listeners, o.lurkers)
+      when "chat" then                @chat.message(o.msg, o.who)
+      when "reload" then              this.reloadState()
       else
-        this.reloadState()
         console.warn "unknown event: " + o.event, o
 
   send: (msg) =>
