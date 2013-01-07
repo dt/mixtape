@@ -4,7 +4,7 @@ class Main
     @$content = $("#content")
     @queue = new Queue(this)
     @player = new Player this, $("#player"), rdioToken, () =>
-      this.reconnect () => this.reloadState () => @player.toggleLocalPlayback()
+      this.reconnect () => @player.setLocalPlayback(true)
     @chat = new Chat(this)
 
     new Search(this, $("#searchterm"), $("#searchresults"))
@@ -32,9 +32,12 @@ class Main
       @connected = true
       f() if f
     sock
+
   reconnect: (f) =>
     @sock = this.openSocket () =>
-      if f then f() else this.reloadState()
+      @player.notifyServerListening()
+      @player.notifyServerBroadcasting()
+      this.reloadState(f)
 
   checkConnection: =>
     this.reconnect() unless @connected

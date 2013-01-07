@@ -34,8 +34,8 @@ class Room(val name: String) {
     user match {
       case Some(u) => {
         val unicast = Concurrent.unicast[JsValue](onStart = channel => {
-          guestlistChanged()
           users.put(u.id, UserChannel(u, channel))
+          guestlistChanged()
         })
 
         unicast.interleave(bcast)
@@ -53,11 +53,11 @@ class Room(val name: String) {
       case Some(u) => {
         users.remove(u.id)
         stoppedListening(u)
-        users.remove(u.id)
         checkBroadcasting()
       }
       case None => anonUsers -= 1
     }
+    guestlistChanged()
   }
 
   def guestlistChanged() = {
@@ -159,8 +159,12 @@ class Room(val name: String) {
   }
 
   def updatePlaybackPosition(pos: Double, ts: Long, who: User) = {
-    playbackPosition = pos
-    everyone.push(Json.toJson(PlaybackProgress(pos, ts)))
+    if (pos < 0.1 && playbackPosition > 5)
+      playNext()
+    else {
+      playbackPosition = pos
+      everyone.push(Json.toJson(PlaybackProgress(pos, ts)))
+    }
   }
 
   def startedListening(u: User) = {
@@ -175,7 +179,7 @@ class Room(val name: String) {
   }
 
   def startedBroadcasting(u: User) = {
-    if (broadcasting.size > 0)
+    if (broadcasting.filterNot(_ == u.id).size > 0)
       broadcasting.flatMap(users.get).foreach(_.channel.push(Json.toJson(StopBroadcasting)))
     broadcasting.add(u.id)
   }

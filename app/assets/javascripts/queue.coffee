@@ -97,7 +97,7 @@ class window.Player
 
     $rdio.bind 'playStateChanged.rdio', (e, newState) =>
       if @playbackState == 1 && newState == 2 && !@skipping
-        this.localPlaybackFinished() if @sendPlaybackEvents
+        this.localPlaybackFinished()
       @skipping = false
       @playbackState = newState
     console.log("setting up rdio...")
@@ -141,7 +141,8 @@ class window.Player
   timestamp: -> new Date().getTime()
 
   localPlaybackFinished: =>
-    @main.send({event: "finished", id: @playing.id})
+    console.log "playback finished", @playing
+    @main.send({event: "finished", id: @playing.id}) if @sendPlaybackEvents
 
   localPlaybackPositionChanged: (pos) =>
     now = this.timestamp()
@@ -176,27 +177,45 @@ class window.Player
       @$player.find('.progress .bar').css('width', Math.floor(100 * @playing.position / @playing.track.duration)+'%')
       $("#position").text(Track.formatDuration(Math.round(@playing.position)))
 
-  toggleSendEvents: () => this.setSendEvents(@localPlayback && !@sendPlaybackEvents)
+  toggleSendEvents: () => this.setSendEvents(!@sendPlaybackEvents)
 
   setSendEvents: (enabled) =>
+    was = @sendPlaybackEvents
     @sendPlaybackEvents = @localPlayback && !!enabled
-    @main.send({"event": if @sendPlaybackEvents then "broadcasting" else "stopped-broadcasting"})
     this.renderSendEventsState()
+
+    if @sendPlaybackEvents
+      this.notifyServerBroadcasting()
+    else if was && !@sendPlaybackEvents
+       @main.send({"event": "stopped-broadcasting"})
 
   renderSendEventsState: =>
     $("#playback-master").toggleClass('disabled', !@sendPlaybackEvents).toggleClass("clickable", @localPlayback)
 
-  toggleLocalPlayback: () =>
-    @localPlayback = @canPlayLocally && !@localPlayback
+  toggleLocalPlayback: () => this.setLocalPlayback(!@localPlayback)
+
+  setLocalPlayback: (enabled) =>
+    was = @localPlayback
+    @localPlayback = @canPlayLocally && enabled
     this.renderLocalPlaybackState()
-    if (!@localPlayback)
-      @main.send({"event": "stopped-listening"})
-      @sendPlaybackEvents = false
-      this.renderSendEventsState()
-      @rdio.stop()
+    if not @localPlayback
+      this.setSendEvents(false)
     else
-      @main.send({"event": "listening"})
+      this.notifyServerListening()
+
+    if was && !@localPlayback
+      @main.send({"event": "stopped-listening"})
+      @rdio.stop()
+
+    else if @localPlayback && !was
       if @playing
         @rdio.play @playing.track.id, {initialPosition: @playing.position}
+
+  notifyServerListening: =>
+    @main.send({"event": "listening"}) if @localPlayback
+
+  notifyServerBroadcasting: =>
+    @main.send({"event": "broadcasting"}) if @sendPlaybackEvents
+
 
   renderLocalPlaybackState: => $("#local-playback").toggleClass('disabled', !@localPlayback)
