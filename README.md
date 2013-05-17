@@ -5,16 +5,13 @@ Mixtape is backed by Rdio, built on Playframework using webscokets.
 
 ![Screenshot](http://f.cl.ly/items/0X3B1z073m0E2d1p3C16/Screen%20Shot%202013-01-03%20at%2010.18.23%20PM.png)
 
-## Prereqisits
-* Play! 2.1 (currently in RC and has to be installed by hand [see below] -- 2.0.x has [a little NPE](https://github.com/playframework/Play20/pull/394))
+## Prerequisites
+Play 2.1
 
-### Installing Play 2.1-RC1 by hand
-    brew update
+### Installing Play 2.1
+OSX:
     brew install play
-    curl -O http://download.playframework.org/releases/play-2.1-RC1.zip
-    unzip play-2.1-RC1.zip
-    mv play-2.1-RC1 /usr/local/Cellar/play/2.1-RC1
-    ln -sf /usr/local/Cellar/play/2.1-RC1/play /usr/local/bin/play
+or look at [http://www.playframework.com/documentation/2.1.1/Installing]
 
 ## Running the app
     play run
