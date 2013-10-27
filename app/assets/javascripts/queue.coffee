@@ -8,11 +8,12 @@ class window.Queue
     });
     @$queue.disableSelection();
 
-  addTrack: (id, name, artist, album, albumKey, art, duration) => @main.send({
+  addTrack: (id, name, artist, artistKey, album, albumKey, art, duration) => @main.send({
     event: "add",
     id: id,
     name: name,
     artist: artist,
+    artistKey: artistKey,
     album: album,
     albumKey: albumKey,
     icon: art,

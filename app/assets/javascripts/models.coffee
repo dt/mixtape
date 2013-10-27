@@ -46,7 +46,7 @@ class window.Album
     imgDiv.append(img)
     imgDiv.click () =>
       @a.tracks.map (t) =>
-        @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon, t.duration)
+        @main.queue.addTrack(t.key, t.name, t.artist, t.artistKey, t.album, t.albumKey, t.icon, t.duration)
     details = $('<div>').addClass('details')
     details.append $('<h1>').text(@a.name)
     details.append $('<h2>').text(@a.artist)
@@ -58,7 +58,7 @@ class window.Album
       row.append $('<td>').text(t.name)
       row.append $('<td>').text(t.artist).addClass("trackartist")
       row.append $('<td>').text(Track.formatDuration(t.duration))
-      row.click () => @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon, t.duration)
+      row.click () => @main.queue.addTrack(t.key, t.name, t.artist, t.artistKey, t.album, t.albumKey, t.icon, t.duration)
       row
 
   show: => @main.$content.empty().append $('<div>').addClass('album').append(@summary, @tracks)
