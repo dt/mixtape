@@ -1,14 +1,18 @@
-@(room: String, rooms: Iterable[String], playbackToken: String)(implicit request: MaybeAuthenticatedRequest)
+@(room: String, rooms: Iterable[String], playbackToken: String, isLoggedIn: Boolean)(implicit request: MaybeAuthenticatedRequest)
 @main("mixtape", room, rooms) {
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span3">
       <div class="well sidebar-nav">
-        <div id="search">
-          <input id="searchterm" type="text" />
-        </div>
-        <ul id="searchresults" class="nav nav-list">
-        </ul>
+        @if(isLoggedIn) {
+          <div id="search">
+            <input id="searchterm" type="text" placeholder="Search for an artist, album or track" />
+          </div>
+          <ul id="searchresults" class="nav nav-list">
+          </ul>
+        } else {
+          Please <a href="/openid">login</a> to add music to the queue.
+        }
       </div><!--/.well -->
     </div><!--/span-->
     <div class="span5" id="content">
@@ -24,6 +28,7 @@
             <div class="details">
               <a class="trackartist"></a>
             </div>
+            <div class="votes"></div>
             <div class="clearfix"></div>
           </div>
           <a class="vote-up"></a>
@@ -64,6 +69,7 @@
 <script type="text/javascript">
   var ROOM = "@room";
   var RDIOTOKEN = "@playbackToken";
+  var isLoggedIn = isLoggedIn;
 </script>
 
 @helper.javascriptRouter("jsRoutes")(
@@ -75,6 +81,8 @@
 )
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.css" rel="stylesheet"></link>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js"></script>
 <script src="@routes.Assets.at("javascripts/rdio.jquery.js")" type="text/javascript"></script>
 <script src="@routes.Assets.at("javascripts/models.js")" type="text/javascript"></script>
 <script src="@routes.Assets.at("javascripts/search.js")" type="text/javascript"></script>

@@ -8,11 +8,12 @@ class window.Queue
     });
     @$queue.disableSelection();
 
-  addTrack: (id, name, artist, album, albumKey, art, duration) => @main.send({
+  addTrack: (id, name, artist, artistKey, album, albumKey, art, duration) => @main.send({
     event: "add",
     id: id,
     name: name,
     artist: artist,
+    artistKey: artistKey,
     album: album,
     albumKey: albumKey,
     icon: art,
@@ -42,6 +43,25 @@ class window.Queue
   renderItem: (res) =>
     this.fillItem(res, $("<div>").addClass("enqueued").attr("id", Queue.id(res.id)).data("id", res.id))
 
+  @renderUsers: (res) =>
+    userDiv = $("<div>").addClass("votes")
+    userDiv.append(Queue.renderUser(res.by))
+    res.votes.up.map (u) =>
+      userDiv.append(Queue.renderUser(u))
+    userDiv
+
+  @renderUser: (u) =>
+    colorCode = parseInt(u.id.replace(/[a-z]/g, "").replace(/-/g, "").substr(10)) % 9
+    initials = u.firstname[0] + u.lastname[0]
+    initialsDiv = $("<div>").addClass("initials").addClass("reversed").addClass("color-" + colorCode)
+    initialsInner = $("<div>").addClass("initials-text")
+      .text(initials)
+      .attr("rel", "tooltip")
+      .attr("title", u.firstname + " " + u.lastname + " (" + u.email + ")")
+    initialsDiv.append(initialsInner)
+    initialsInner.qtip();
+    initialsDiv
+
   fillItem: (res, $r) =>
     $r.toggleClass "skipping", res.skipping == true
     $tdata = $("<div>").addClass("trackdata")
@@ -63,6 +83,9 @@ class window.Queue
       @main.showAlbum(res.track.albumKey)
     $r.append $("<a>").addClass("vote-up").click () => this.voteUp(res.id)
     $r.append $("<a>").addClass("vote-down").click () => this.voteDown(res.id)
+
+    $r.append(Queue.renderUsers(res))
+
     $r.append $("<div>").addClass("clearfix")
     $r
 
@@ -76,11 +99,11 @@ class window.Player
     this.renderSendEventsState()
     this.renderLocalPlaybackState()
     @totalCorrection = 0
-    @rdio = this.setupRdio(@$player.find('.rdio'), token, f)
+    @rdio = this.setupRdio(@$player.find(".rdio"), token, f)
     $("#playback-lag").click this.resyncPosition
 
   setupRdio: ($rdio, token, f) =>
-    $rdio.bind 'ready.rdio', (_, userinfo) =>
+    $rdio.bind "ready.rdio", (_, userinfo) =>
       console.log("rdio is ready.")
       if (userinfo && userinfo.isSubscriber)
         console.log "rdio subscriber! good!", userinfo
@@ -91,11 +114,11 @@ class window.Player
         console.warn("you need to be logged in to rdio", userinfo)
       f() if f != undefined
 
-    $rdio.bind 'playingTrackChanged.rdio', (e, playingTrack, sourcePosition) =>
+    $rdio.bind "playingTrackChanged.rdio", (e, playingTrack, sourcePosition) =>
 
-    $rdio.bind 'positionChanged.rdio', (e, pos) => this.localPlaybackPositionChanged(pos)
+    $rdio.bind "positionChanged.rdio", (e, pos) => this.localPlaybackPositionChanged(pos)
 
-    $rdio.bind 'playStateChanged.rdio', (e, newState) =>
+    $rdio.bind "playStateChanged.rdio", (e, newState) =>
       if @playbackState == 1 && newState == 2 && !@skipping
         this.localPlaybackFinished()
       @skipping = false
@@ -126,11 +149,12 @@ class window.Player
       this.renderPlaybackPosition()
       display.find(".name").text(@playing.track.name)
       display.find(".icon").attr("src", @playing.track.icon)
-      display.find(".trackartist").text(@playing.track.artist).unbind('click').click (e) =>
+      display.find(".votes").empty().append(Queue.renderUsers(@playing))
+      display.find(".trackartist").text(@playing.track.artist).unbind("click").click (e) =>
         e.stopPropagation()
         @main.showArtist(@playing.track.artistKey)
-      display.find(".vote-up").unbind('click').click () => @main.queue.voteUp(@playing.id)
-      display.find(".vote-down").unbind('click').click () => @main.queue.voteDown(@playing.id)
+      display.find(".vote-up").unbind("click").click () => @main.queue.voteUp(@playing.id)
+      display.find(".vote-down").unbind("click").click () => @main.queue.voteDown(@playing.id)
       display.show()
     else
       @rdio.stop() if @localPlayback
@@ -174,7 +198,7 @@ class window.Player
 
   renderPlaybackPosition: =>
     if @playing
-      @$player.find('.progress .bar').css('width', Math.floor(100 * @playing.position / @playing.track.duration)+'%')
+      @$player.find(".progress .bar").css("width", Math.floor(100 * @playing.position / @playing.track.duration)+"%")
       $("#position").text(Track.formatDuration(Math.round(@playing.position)))
 
   toggleSendEvents: () => this.setSendEvents(!@sendPlaybackEvents)
@@ -190,7 +214,7 @@ class window.Player
        @main.send({"event": "stopped-broadcasting"})
 
   renderSendEventsState: =>
-    $("#playback-master").toggleClass('disabled', !@sendPlaybackEvents).toggleClass("clickable", @localPlayback)
+    $("#playback-master").toggleClass("disabled", !@sendPlaybackEvents).toggleClass("clickable", @localPlayback)
 
   toggleLocalPlayback: () => this.setLocalPlayback(!@localPlayback)
 
@@ -218,4 +242,4 @@ class window.Player
     @main.send({"event": "broadcasting"}) if @sendPlaybackEvents
 
 
-  renderLocalPlaybackState: => $("#local-playback").toggleClass('disabled', !@localPlayback)
+  renderLocalPlaybackState: => $("#local-playback").toggleClass("disabled", !@localPlayback)

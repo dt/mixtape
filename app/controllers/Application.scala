@@ -21,7 +21,7 @@ object Application extends Controller with Secured {
       val domain = request.domain
       Async {
         RdioApi.call("getPlaybackToken", Map("domain" -> Seq(domain))).map{ token =>
-          Ok(views.html.index(room.name, Room.list, (token.json \ "result").as[String]))
+          Ok(views.html.index(room.name, Room.list, (token.json \ "result").as[String], request.userOpt.isDefined))
         }
       }
     } getOrElse {
