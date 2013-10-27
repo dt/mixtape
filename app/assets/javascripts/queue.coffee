@@ -53,13 +53,12 @@ class window.Queue
     colorCode = parseInt(u.id.replace(/[a-z]/g, "").replace(/-/g, "").substr(10)) % 9
     initials = u.firstname[0] + u.lastname[0]
     initialsDiv = $("<div>").addClass("initials").addClass("reversed").addClass("color-" + colorCode)
-    initialsInner = $("<span>").addClass("initials-text")
+    initialsInner = $("<div>").addClass("initials-text")
       .text(initials)
       .attr("rel", "tooltip")
-      .attr("title", u.firstname + " " + u.lastname + "(" + u.email + ")")
-      .attr("data-toggle", "tooltip")
-    initialsInner.tooltip({"selector": "", "placement": "bottom"})
+      .attr("title", u.firstname + " " + u.lastname + " (" + u.email + ")")
     initialsDiv.append(initialsInner)
+    initialsInner.qtip();
     initialsDiv
 
   fillItem: (res, $r) =>
