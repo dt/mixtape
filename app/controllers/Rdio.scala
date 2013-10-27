@@ -4,6 +4,7 @@ import lib.RdioApi
 import play.api._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.Json
 
 object Rdio extends Controller {
 
@@ -17,8 +18,19 @@ object Rdio extends Controller {
 
   def artist(id: String) = Action { Async {
     RdioApi.call("get",  Map(
-      "keys" -> Seq(id)
-    )).map(i => Ok(i.json \ "result" \ id))
+      "keys" -> Seq(id),
+      "extras" -> Seq("albums")
+    )).flatMap(artistInfoResponse =>
+      RdioApi.call("getAlbumsForArtist", Map(
+        "artist" -> Seq(id)
+      )).map(albumResponse =>
+        Ok(Json.toJson(Map(
+            "artistInfo" -> (artistInfoResponse.json \ "result" \ id),
+            "albums" -> (albumResponse.json \ "result")
+          ))
+        )
+      )
+    )
   }}
 
   def album(id: String) = Action { Async {
