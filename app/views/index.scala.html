@@ -1,14 +1,18 @@
-@(room: String, rooms: Iterable[String], playbackToken: String)(implicit request: MaybeAuthenticatedRequest)
+@(room: String, rooms: Iterable[String], playbackToken: String, isLoggedIn: Boolean)(implicit request: MaybeAuthenticatedRequest)
 @main("mixtape", room, rooms) {
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span3">
       <div class="well sidebar-nav">
-        <div id="search">
-          <input id="searchterm" type="text" />
-        </div>
-        <ul id="searchresults" class="nav nav-list">
-        </ul>
+        @if(isLoggedIn) {
+          <div id="search">
+            <input id="searchterm" type="text" placeholder="Search for an artist, album or track" />
+          </div>
+          <ul id="searchresults" class="nav nav-list">
+          </ul>
+        } else {
+          Please <a href="/openid">login</a> to add music to the queue.
+        }
       </div><!--/.well -->
     </div><!--/span-->
     <div class="span5" id="content">
@@ -64,6 +68,7 @@
 <script type="text/javascript">
   var ROOM = "@room";
   var RDIOTOKEN = "@playbackToken";
+  var isLoggedIn = isLoggedIn;
 </script>
 
 @helper.javascriptRouter("jsRoutes")(
