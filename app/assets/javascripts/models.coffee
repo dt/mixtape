@@ -1,5 +1,33 @@
 class window.Artist
-  show: =>
+  compareByDate: (a,b) ->
+    if a.releaseDate > b.releaseDate
+       return -1
+    if a.releaseDate < b.releaseDate
+      return 1
+    return 0
+
+  constructor: (@main, @a) ->
+    @summary = $('<div>').addClass('summary')
+    details = $('<div>').addClass('details')
+    details.append $('<h1>').text(@a.artistInfo.name)
+
+    if @a.artistInfo.icon.indexOf('no-artist') == -1
+      img = $('<img>').attr('src', @a.artistInfo.icon).attr('alt', @a.artistInfo.name)
+      @summary.append(img)
+
+    albums = @a.albums.sort(@compareByDate)
+
+    @summary.append(details)
+    @albums = $('<table>').addClass('albums').append albums.map (t) =>
+      img = $('<img>').attr('src', t.icon).attr('alt', t.name)
+      row = $('<tr>')
+      row.append $('<td>').append(img)
+      /* TODO(blackmad): make this prettier */
+      row.append $('<td>').html(t.name + "<br><br>" + t.displayDate + "<br>" + t.length + " tracks")
+      row.click () => @main.showAlbum(t.key)
+      row
+
+  show: => @main.$content.empty().append $('<div>').addClass('artist').append(@summary, @albums)
 
   this.renderSearchResult = (res, click) ->
     $r = $("<li>").addClass("result").addClass("artist").click () => click(res.key)
@@ -12,12 +40,18 @@ class window.Artist
 class window.Album
   constructor: (@main, @a) ->
     @summary = $('<div>').addClass('summary')
+    imgDiv = $('<div>').addClass('albumArt')
     img = $('<img>').attr('src', @a.icon).attr('alt', @a.name)
+    imgDiv.append($('<div>').addClass('playAll'))
+    imgDiv.append(img)
+    imgDiv.click () =>
+      @a.tracks.map (t) =>
+        @main.queue.addTrack(t.key, t.name, t.artist, t.album, t.albumKey, t.icon, t.duration)
     details = $('<div>').addClass('details')
     details.append $('<h1>').text(@a.name)
     details.append $('<h2>').text(@a.artist)
     details.append $('<h3>').text(@a.displayDate)
-    @summary.append(img, details)
+    @summary.append(imgDiv, details)
     @tracks = $('<table>').addClass('tracks').append @a.tracks.map (t) =>
       row = $('<tr>')
       row.append $('<td>').text(t.trackNum)

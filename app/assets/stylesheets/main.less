@@ -112,11 +112,40 @@
 }
 
 #content {
+  .artist {
+    .albums {
+      tr {
+        .rollover(#efefef);
+        .clickable;
+        .sep(#f0f0f0);
+      }
+      td {
+        padding: 1em;
+      }
+      .trackartist {
+        color: #777;
+      }
+    }
+  }
   .album {
     .summary {
+      position: relative;
       img {
         margin: 10px;
         float: left;
+      }
+      .playAll {
+        .clickable;
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        z-index: 200;
+        margin: 10px;
+      }
+      .playAll:hover {
+        background-image:url('/assets/images/img/playButton.png');
+        background-repeat:no-repeat;
+        background-position:center;
       }
       .details {
         float: left;
