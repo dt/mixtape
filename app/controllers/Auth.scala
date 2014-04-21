@@ -4,6 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.openid._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.Future
 import model.User
 
 abstract class RequestWithUserOpt(userOpt: Option[User], request: Request[AnyContent]) extends WrappedRequest(request)
@@ -18,11 +19,11 @@ trait Secured {
       last <- r.session.get("lastname")
     } yield User(id, email, first, last)
 
-  def Authenticated(f: AuthenticatedRequest => Result) = Action { implicit r =>
-    user(r).map( u => f(AuthenticatedRequest(u, r))).getOrElse(Results.Redirect(routes.Auth.start(r.uri)))
+  def Authenticated(f: AuthenticatedRequest => Future[SimpleResult]) = Action.async { implicit r =>
+    user(r).map( u => f(AuthenticatedRequest(u, r))).getOrElse(Future(Results.Redirect(routes.Auth.start(r.uri))))
   }
 
-  def MaybeAuthenticated(f: MaybeAuthenticatedRequest => Result) = Action { implicit r =>
+  def MaybeAuthenticated(f: MaybeAuthenticatedRequest => Future[SimpleResult]) = Action.async { implicit r =>
     f(MaybeAuthenticatedRequest(user(r), r))
   }
 
@@ -31,7 +32,7 @@ trait Secured {
 object Auth extends GoogleAuthController
 
 trait GoogleAuthController extends Controller {
-  def start(returnTo: String) = Action { implicit r =>
+  def start(returnTo: String) = Action.async { implicit r =>
     val url = "https://www.google.com/accounts/o8/id"
     val attributes = Seq(
       "email" -> "http://schema.openid.net/contact/email",
@@ -39,11 +40,11 @@ trait GoogleAuthController extends Controller {
       "lastname" ->  "http://axschema.org/namePerson/last"
     )
 
-    AsyncResult {OpenID.redirectURL(url, routes.Auth.finish(returnTo).absoluteURL(), attributes).map(Redirect(_))}
+    OpenID.redirectURL(url, routes.Auth.finish(returnTo).absoluteURL(), attributes).map(Redirect(_))
   }
 
-  def finish(returnTo: String) = Action { implicit r =>
-    AsyncResult {
+  def finish(returnTo: String) = Action.async { implicit r =>
+    {
       OpenID.verifiedId.map { info =>
         Redirect(returnTo).withSession(
           "id" -> java.util.UUID.randomUUID().toString(),

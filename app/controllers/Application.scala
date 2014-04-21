@@ -6,7 +6,7 @@ import play.api.libs.iteratee._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
+import scala.concurrent.Future
 import lib.{Gravatar, RdioApi}
 import model._
 import model.ModelJson._
@@ -19,13 +19,11 @@ object Application extends Controller with Secured {
   def index(roomId: String) = MaybeAuthenticated { implicit request =>
     Room(roomId.toLowerCase, request.userOpt).map { room =>
       val domain = request.domain
-      Async {
-        RdioApi.call("getPlaybackToken", Map("domain" -> Seq(domain))).map{ token =>
-          Ok(views.html.index(room.name, Room.list, (token.json \ "result").as[String], request.userOpt.isDefined))
-        }
+      RdioApi.call("getPlaybackToken", Map("domain" -> Seq(domain))).map{ token =>
+        Ok(views.html.index(room.name, Room.list, (token.json \ "result").as[String], request.userOpt.isDefined))
       }
     } getOrElse {
-      NotFound("This room doesn't exist yet. You need to be logged in to create rooms.")
+      Future(NotFound("This room doesn't exist yet. You need to be logged in to create rooms."))
     }
   }
 
@@ -78,7 +76,7 @@ object Application extends Controller with Secured {
             }
           }
         }; case _ => //pass
-      }.mapDone { _ =>
+      }.map { _ =>
         room.left(user(request))
       }
 

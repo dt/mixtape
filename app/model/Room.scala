@@ -1,11 +1,12 @@
 package model
 
-import scala.collection.mutable
+import ModelJson._
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.iteratee.Concurrent
 import play.api.libs.iteratee.Concurrent._
 import play.api.libs.json._
 import play.api.libs.json.Json._
-import ModelJson._
+import scala.collection.mutable
 
 object Room {
   private val all = scala.collection.mutable.HashMap.empty[String, Room]

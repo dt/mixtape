@@ -8,15 +8,15 @@ import play.api.libs.json.Json
 
 object Rdio extends Controller {
 
-  def search(term: String) = Action { Async {
+  def search(term: String) = Action.async {
     RdioApi.call("search",  Map(
       "types" -> Seq("Artist", "Album", "Track"),
       "query" -> Seq(term),
       "extras" -> Seq("albumCount")
     )).map(i => Ok(i.json))
-  }}
+  }
 
-  def artist(id: String) = Action { Async {
+  def artist(id: String) = Action.async {
     RdioApi.call("get",  Map(
       "keys" -> Seq(id),
       "extras" -> Seq("albums")
@@ -31,12 +31,12 @@ object Rdio extends Controller {
         )
       )
     )
-  }}
+  }
 
-  def album(id: String) = Action { Async {
+  def album(id: String) = Action.async {
     RdioApi.call("get",  Map(
       "keys" -> Seq(id),
       "extras" -> Seq("tracks")
     )).map(i => Ok(i.json \ "result" \ id))
-  }}
+  }
 }
