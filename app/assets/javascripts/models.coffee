@@ -22,7 +22,6 @@ class window.Artist
       img = $('<img>').attr('src', t.icon).attr('alt', t.name)
       row = $('<tr>')
       row.append $('<td>').append(img)
-      /* TODO(blackmad): make this prettier */
       row.append $('<td>').html(t.name + "<br><br>" + t.displayDate + "<br>" + t.length + " tracks")
       row.click () => @main.showAlbum(t.key)
       row
