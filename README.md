@@ -1,7 +1,7 @@
 # Mixtape
 
 Mixtape is a web-based collaborative jukebox supporting with multiple 'rooms' and multiple listening and non-listening participants.
-Mixtape is backed by Rdio, built on Playframework using webscokets.
+Mixtape is backed by Rdio, built on Playframework using websockets.
 
 ![Screenshot](http://f.cl.ly/items/0X3B1z073m0E2d1p3C16/Screen%20Shot%202013-01-03%20at%2010.18.23%20PM.png)
 
