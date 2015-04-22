@@ -1,0 +1,10 @@
+@(rooms: Iterable[String])(implicit request: MaybeAuthenticatedRequest)
+@main("mixtape", "", rooms) {
+  <form method=post>
+  email: <input type="text" name="email" />
+  <input type="submit" value="login" />
+  </form>
+
+}{
+
+}

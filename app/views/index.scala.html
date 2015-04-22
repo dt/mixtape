@@ -1,6 +1,5 @@
 @(room: String, rooms: Iterable[String], playbackToken: String, isLoggedIn: Boolean)(implicit request: MaybeAuthenticatedRequest)
 @main("mixtape", room, rooms) {
-<div class="container-fluid">
   <div class="row-fluid">
     <div class="span3">
       <div class="well sidebar-nav">
@@ -11,7 +10,7 @@
           <ul id="searchresults" class="nav nav-list">
           </ul>
         } else {
-          Please <a href="/openid">login</a> to add music to the queue.
+          Please <a href="/login">login</a> to add music to the queue.
         }
       </div><!--/.well -->
     </div><!--/span-->
@@ -48,24 +47,7 @@
       </div>
     </div>
   </div><!--/row-->
-  <hr>
-  <footer>
-    <p>
-      <a href="http://github.com/tinystatemachine/mixtape" target="_blank">Mixtape</a> was built by
-      <a href="http://twitter.com/state_machine" target="_blank">David</a> using
-      <a href="http://developer.rdio.com" target="_blank">the Rdio API</a>,
-      <a href="http://playframework.org" target="_blank">Play! Framework</a>,
-      <a href="http://twitter.github.com/bootstrap" target="_blank">Bootstrap</a> (obviously), and
-      <a href="http://glyphicons.com" target="_blank">Glyphicons</a>.
-    </p>
-    <p class="debug">
-      <img id="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
-      ε <a id="playback-lag" class="clickable" title="resync"></a>
-      Δ <span id="total-correction"></span>
-
-    </p>
-  </footer>
-</div><!--/.fluid-container-->
+}{
 <script type="text/javascript">
   var ROOM = "@room";
   var RDIOTOKEN = "@playbackToken";

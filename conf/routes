@@ -10,8 +10,8 @@ GET     /$room<[a-zA-Z0-9]+>/controls             controllers.Application.contro
 GET     /$room<[a-zA-Z0-9]+>/queue                controllers.Application.queue(room: String)
 
 # Auth
-GET     /openid                     controllers.Auth.start(returnTo: String ?= "/")
-GET     /login                      controllers.Auth.finish(returnTo: String ?= "/")
+GET     /login                      controllers.Auth.start(returnTo: String ?= "/")
+POST    /login                      controllers.Auth.finish(returnTo: String ?= "/")
 GET     /logout                     controllers.Auth.logout()
 
 # Rdio API proxy

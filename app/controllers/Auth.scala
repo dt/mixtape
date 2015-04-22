@@ -5,7 +5,7 @@ import play.api.mvc._
 import play.api.libs.openid._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
-import model.User
+import model._
 
 abstract class RequestWithUserOpt(userOpt: Option[User], request: Request[AnyContent]) extends WrappedRequest(request)
 case class AuthenticatedRequest(user: User, request: Request[AnyContent]) extends RequestWithUserOpt(Some(user), request)
@@ -29,7 +29,7 @@ trait Secured {
 
 }
 
-object Auth extends GoogleAuthController
+/*object Auth extends GoogleAuthController
 
 trait GoogleAuthController extends Controller {
   def start(returnTo: String) = Action.async { implicit r =>
@@ -61,4 +61,21 @@ trait GoogleAuthController extends Controller {
   }
 
   def logout = Action { implicit r => Redirect("/").withNewSession }
+}*/
+
+object Auth extends Controller with Secured {
+  def logout = Action { implicit r => Redirect("/").withNewSession }
+  def start(returnTo: String) = MaybeAuthenticated { implicit r =>
+    Future(Ok(views.html.login(Room.list)(r)))
+  }
+  def finish(returnTo: String) = Action { implicit r =>
+    val email = r.body.asFormUrlEncoded.get("email").headOption.getOrElse("unknown@")
+    Redirect(returnTo).withSession(
+      "id" -> java.util.UUID.randomUUID().toString(),
+      Security.username -> email,
+      "email" -> email,
+      "firstname" -> email.split("@").head,
+      "lastname" -> " "
+    )
+  }
 }

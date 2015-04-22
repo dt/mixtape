@@ -1,4 +1,4 @@
-@(title: String, room: String, rooms: Iterable[String])(content: Html)(implicit request: MaybeAuthenticatedRequest)
+@(title: String, room: String, rooms: Iterable[String])(content: Html)(js: Html)(implicit request: MaybeAuthenticatedRequest)
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -61,6 +61,31 @@
         </div>
       </div>
     </div>
-    @content
+    <div class="container-fluid">
+      @content
+      <hr>
+      <footer>
+        <p>
+          <a href="http://github.com/tinystatemachine/mixtape" target="_blank">Mixtape</a> was built by
+          <a href="http://twitter.com/state_machine" target="_blank">David</a> using
+          <a href="http://developer.rdio.com" target="_blank">the Rdio API</a>,
+          <a href="http://playframework.org" target="_blank">Play! Framework</a>,
+          <a href="http://twitter.github.com/bootstrap" target="_blank">Bootstrap</a> (obviously), and
+          <a href="http://glyphicons.com" target="_blank">Glyphicons</a>.
+        </p>
+        <p class="debug">
+          <img id="playback-master" src="@routes.Assets.at("images/img/glyphicons_032_wifi_alt.png")" title="broadcast playback events" />
+          ε <a id="playback-lag" class="clickable" title="resync"></a>
+          Δ <span id="total-correction"></span>
+
+        </p>
+      </footer>
+    </div><!--/.fluid-container-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.css" rel="stylesheet"></link>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js"></script>
+    @js
   </body>
 </html>
