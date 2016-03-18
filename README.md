@@ -1,3 +1,5 @@
+# ABANDONED SINCE RDIO SHUTDOWN
+
 # Mixtape
 
 Mixtape is a web-based collaborative jukebox supporting with multiple 'rooms' and multiple listening and non-listening participants.
